@@ -103,12 +103,14 @@ export default function PatientDashboard() {
             <p className="text-blue-200 text-xs mt-2">
               Show this to any clinician worldwide
             </p>
-         <div className="bg-white p-2 rounded-xl">
-  <QRCodeSVG
-    value={`${window.location.origin}/clinician/access?patient_id=${patient?.health_id}`}
-    size={80}
-  />
-</div>
+          </div>
+          <div className="bg-white p-2 rounded-xl">
+            <QRCodeSVG
+              value={`${window.location.origin}/clinician/access?patient_id=${patient?.health_id}`}
+              size={80}
+            />
+          </div>
+        </div>
 
         {/* Basic Info */}
         <div className="bg-white rounded-2xl p-6">

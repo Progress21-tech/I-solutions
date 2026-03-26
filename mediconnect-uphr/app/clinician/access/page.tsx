@@ -1,5 +1,6 @@
 'use client'
-export const dynamic = 'force-dynamic'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -20,7 +21,7 @@ interface Record {
   created_at: string
 }
 
-export default function ClinicianAccessPage() {
+function ClinicianAccessPage() {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [records, setRecords] = useState<Record[]>([])
   const [clinician, setClinician] = useState<any>(null)
@@ -225,5 +226,13 @@ export default function ClinicianAccessPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>}>
+      <ClinicianAccessPage />
+    </Suspense>
   )
 }

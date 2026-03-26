@@ -1,5 +1,6 @@
 'use client'
-export const dynamic = 'force-dynamic'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -17,7 +18,7 @@ const planDetails = {
   },
 }
 
-export default function PaymentPage() {
+function PaymentPage() {
   const [clinician, setClinician] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [paying, setPaying] = useState(false)
@@ -170,5 +171,13 @@ export default function PaymentPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>}>
+      <PaymentPage />
+    </Suspense>
   )
 }

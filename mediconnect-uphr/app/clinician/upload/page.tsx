@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 
 const recordTypes = ['diagnosis', 'lab', 'prescription', 'imaging']
 
-export default function UploadRecordPage() {
+function UploadRecordPage() {
   const [clinician, setClinician] = useState<any>(null)
   const [patient, setPatient] = useState<any>(null)
   const [recordType, setRecordType] = useState('diagnosis')
@@ -220,5 +220,13 @@ export default function UploadRecordPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>}>
+      <UploadRecordPage />
+    </Suspense>
   )
 }

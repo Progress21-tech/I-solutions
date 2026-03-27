@@ -91,6 +91,18 @@ export default function LoginPage() {
 
   setLoading(false)
 }
+
+  {/* Password requirements */}
+{isSignUp && password.length > 0 && (
+  <div className="space-y-1">
+    <p className={`text-xs flex items-center gap-2 ${password.length >= 8 ? 'text-green-500' : 'text-red-400'}`}>
+      {password.length >= 8 ? '✓' : '✗'} At least 8 characters
+    </p>
+    <p className={`text-xs flex items-center gap-2 ${/\d/.test(password) ? 'text-green-500' : 'text-red-400'}`}>
+      {/\d/.test(password) ? '✓' : '✗'} Contains at least one number
+    </p>
+  </div>
+)}
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">

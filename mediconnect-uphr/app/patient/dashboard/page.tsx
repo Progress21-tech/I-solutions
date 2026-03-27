@@ -21,14 +21,16 @@ interface Record {
   created_at: string
 }
 
+interface Clinician {
+  full_name: string
+  hospital_name: string
+}
+
 interface AccessLog {
   id: string
   accessed_at: string
   action: string
-  clinicians: {
-    full_name: string
-    hospital_name: string
-  } | null
+  clinicians: Clinician | null
 }
 
 export default function PatientDashboard() {
@@ -44,22 +46,28 @@ export default function PatientDashboard() {
   }, [])
 
   const fetchPatientData = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
-      router.push('/login')
-      return
-    }
+      if (!user) {
+        router.push('/login')
+        return
+      }
 
-    const { data: patientData } = await supabase
-      .from('patients')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
+      const { data: patientData } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
 
-    if (patientData) {
+      if (!patientData) {
+        setLoading(false)
+        return
+      }
+
       setPatient(patientData)
 
+      // Fetch records
       const { data: recordsData } = await supabase
         .from('records')
         .select('*')
@@ -68,7 +76,7 @@ export default function PatientDashboard() {
 
       setRecords(recordsData || [])
 
-      // ✅ FIXED: single-line select (no multiline template string)
+      // Fetch access logs
       const { data: logsData } = await supabase
         .from('access_logs')
         .select('id, accessed_at, action, clinicians(full_name, hospital_name)')
@@ -76,10 +84,20 @@ export default function PatientDashboard() {
         .order('accessed_at', { ascending: false })
         .limit(5)
 
-      setAccessLogs(logsData || [])
-    }
+      // ✅ Transform clinicians array → single object
+      const formattedLogs: AccessLog[] = (logsData || []).map((log: any) => ({
+        id: log.id,
+        accessed_at: log.accessed_at,
+        action: log.action,
+        clinicians: log.clinicians?.[0] || null
+      }))
 
-    setLoading(false)
+      setAccessLogs(formattedLogs)
+    } catch (error) {
+      console.error('Error fetching patient data:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSignOut = async () => {
@@ -130,7 +148,9 @@ export default function PatientDashboard() {
           </div>
           <div className="bg-white p-2 rounded-xl">
             <QRCodeSVG
-              value={`${typeof window !== 'undefined' ? window.location.origin : ''}/clinician/access?patient_id=${patient?.health_id}`}
+              value={`${
+                typeof window !== 'undefined' ? window.location.origin : ''
+              }/clinician/access?patient_id=${patient?.health_id}`}
               size={80}
             />
           </div>

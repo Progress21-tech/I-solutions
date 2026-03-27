@@ -12,10 +12,9 @@ export async function POST(req: Request) {
       )
     }
 
-    const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY
-    })
-
+   const anthropic = new Anthropic({
+  apiKey: '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'
+})
     const systemPrompt = `You are a friendly health assistant for ${patient?.full_name || 'this patient'}. 
 You help patients understand their medical records in simple, clear language.
 

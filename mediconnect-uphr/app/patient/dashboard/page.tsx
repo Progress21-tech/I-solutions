@@ -199,6 +199,47 @@ export default function PatientDashboard() {
           )}
         </div>
 
+        {/* Access Log */}
+<div className="bg-white rounded-2xl p-6">
+  <h3 className="font-semibold text-gray-800 mb-4">
+    Who Viewed Your Records
+  </h3>
+  {accessLogs.length === 0 ? (
+    <p className="text-gray-400 text-sm">
+      No one has accessed your records yet.
+    </p>
+  ) : (
+    <div className="space-y-3">
+      {accessLogs.map((log) => (
+        <div
+          key={log.id}
+          className="flex items-center justify-between border border-gray-100 rounded-xl p-4"
+        >
+          <div>
+            <p className="text-sm font-medium text-gray-800">
+              Dr. {log.clinicians?.full_name}
+            </p>
+            <p className="text-xs text-gray-400">
+              {log.clinicians?.hospital_name}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-400">
+              {new Date(log.accessed_at).toLocaleDateString()}
+            </p>
+            <p className="text-xs text-blue-500 capitalize">
+              {log.action?.replace('_', ' ')}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+{/* AI Summary Button */}
+<button
+  onClick={() => router.push('/patient/chat')}
         {/* AI Summary Button */}
         <button
           onClick={() => router.push('/patient/chat')}

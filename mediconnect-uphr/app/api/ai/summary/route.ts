@@ -1,40 +1,60 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!
-})
-
 export async function POST(req: Request) {
-  const { patient, records } = await req.json()
+  try {
+    const { patient, records } = await req.json()
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1024,
-    messages: [
-      {
-        role: 'user',
-        content: `You are a friendly health assistant helping a patient understand their medical records in simple, clear language. 
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json(
+        { error: 'API key not configured' },
+        { status: 500 }
+      )
+    }
 
-Patient: ${patient.full_name}
-Blood Group: ${patient.blood_group || 'Unknown'}
-Genotype: ${patient.genotype || 'Unknown'}
+    const anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY
+    })
+
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: `You are a friendly health assistant helping a patient understand their medical records in simple clear language.
+
+Patient: ${patient?.full_name || 'Patient'}
+Blood Group: ${patient?.blood_group || 'Unknown'}
+Genotype: ${patient?.genotype || 'Unknown'}
+Known Allergies: ${patient?.allergies || 'None recorded'}
+Chronic Conditions: ${patient?.chronic_conditions?.join(', ') || 'None recorded'}
 
 Medical Records:
-${JSON.stringify(records, null, 2)}
+${records?.length > 0 ? JSON.stringify(records, null, 2) : 'No records uploaded yet'}
 
-Please summarize this patient's health records in simple terms they can understand. 
+Please summarize this patient's health in simple terms they can understand.
 - Avoid medical jargon
-- Highlight key conditions and medications
+- Highlight key conditions and medications if any
 - Mention one or two things they should monitor
 - Be warm and reassuring
 - End with: "Remember to always consult your doctor for medical advice."
 - Keep it under 150 words`
-      }
-    ]
-  })
+        }
+      ]
+    })
 
-  const summary = message.content[0].type === 'text' ? message.content[0].text : ''
+    const summary = message.content[0].type === 'text'
+      ? message.content[0].text
+      : 'Unable to generate summary.'
 
-  return NextResponse.json({ summary })
+    return NextResponse.json({ summary })
+
+  } catch (error: any) {
+    console.error('AI summary error:', error)
+    return NextResponse.json(
+      { error: error?.message || 'Unknown error' },
+      { status: 500 }
+    )
+  }
 }

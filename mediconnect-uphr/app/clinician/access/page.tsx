@@ -1,9 +1,10 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────
 
 interface Patient {
   id: string
@@ -33,32 +34,32 @@ interface MedicalRecord {
 type TabId = 'overview' | 'diagnosis' | 'prescription' | 'lab' | 'note'
 
 const RECORD_TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: 'overview',     label: 'Overview',      icon: '📋' },
-  { id: 'diagnosis',    label: 'Diagnosis',      icon: '🩺' },
-  { id: 'prescription', label: 'Prescription',   icon: '💊' },
-  { id: 'lab',          label: 'Lab Results',    icon: '🔬' },
-  { id: 'note',         label: "Doctor's Notes", icon: '📝' },
+  { id: 'overview', label: 'Overview', icon: '📋' },
+  { id: 'diagnosis', label: 'Diagnosis', icon: '🩺' },
+  { id: 'prescription', label: 'Prescription', icon: '💊' },
+  { id: 'lab', label: 'Lab Results', icon: '🔬' },
+  { id: 'note', label: "Doctor's Notes", icon: '📝' },
 ]
 
 const BLOOD_TYPES = ['A+','A-','B+','B-','AB+','AB-','O+','O-','Unknown']
 const GENDERS     = ['Male','Female','Non-binary','Prefer not to say']
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Component ─────────────────────────────────────────────────────────────
 
 export default function ClinicianAccessPage() {
   const router       = useRouter()
   const searchParams = useSearchParams()
   const patientId    = searchParams.get('patient_id')
 
-  const [clinician,   setClinician]   = useState<any>(null)
-  const [patient,     setPatient]     = useState<Patient | null>(null)
-  const [records,     setRecords]     = useState<MedicalRecord[]>([])
-  const [activeTab,   setActiveTab]   = useState<TabId>('overview')
-  const [loading,     setLoading]     = useState(true)
+  const [clinician, setClinician] = useState<null | { id: string; full_name: string; is_verified: boolean }>(null)
+  const [patient, setPatient]     = useState<Patient | null>(null)
+  const [records, setRecords]     = useState<MedicalRecord[]>([])
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
+  const [loading, setLoading]     = useState(true)
   const [notVerified, setNotVerified] = useState(false)
-  const [saving,      setSaving]      = useState(false)
-  const [saveMsg,     setSaveMsg]     = useState('')
-  const [saveError,   setSaveError]   = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState('')
+  const [saveError, setSaveError] = useState('')
 
   // Patient edit form
   const [patientForm, setPatientForm] = useState<Partial<Patient>>({})
@@ -67,8 +68,7 @@ export default function ClinicianAccessPage() {
   // New record form
   const [newRecord, setNewRecord] = useState({ title: '', details: '' })
 
-  // ── Fetch on mount ──────────────────────────────────────────────────────
-
+  // ── Fetch data on mount ────────────────────────────────────────────────
   useEffect(() => {
     if (patientId) init()
   }, [patientId])
@@ -118,13 +118,11 @@ export default function ClinicianAccessPage() {
       .order('created_at', { ascending: false })
 
     if (recsError) console.error(recsError)
-
     setRecords(recs || [])
     setLoading(false)
   }
 
-  // ── Save patient info ───────────────────────────────────────────────────
-
+  // ── Save patient info ──────────────────────────────────────────────────
   const handleSavePatient = async () => {
     if (!patient) return
 
@@ -147,9 +145,8 @@ export default function ClinicianAccessPage() {
       })
       .eq('id', patient.id)
 
-    if (error) {
-      setSaveError('Failed to update patient record.')
-    } else {
+    if (error) setSaveError('Failed to update patient record.')
+    else {
       setPatient(prev => ({ ...prev!, ...patientForm }))
       setSaveMsg('Patient record updated.')
       setEditingPatient(false)
@@ -160,10 +157,8 @@ export default function ClinicianAccessPage() {
   }
 
   // ── Add medical record ──────────────────────────────────────────────────
-
   const handleAddRecord = async (type: MedicalRecord['record_type']) => {
     if (!patient || !clinician) return
-
     if (!newRecord.title.trim() || !newRecord.details.trim()) {
       setSaveError('Please fill in both title and details.')
       return
@@ -184,9 +179,8 @@ export default function ClinicianAccessPage() {
       .select()
       .single()
 
-    if (error) {
-      setSaveError('Failed to save record. Please try again.')
-    } else if (data) {
+    if (error) setSaveError('Failed to save record. Please try again.')
+    else if (data) {
       setRecords(prev => [data, ...prev])
       setNewRecord({ title: '', details: '' })
       setSaveMsg('Record saved successfully.')
@@ -203,7 +197,6 @@ export default function ClinicianAccessPage() {
     new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 
   // ── Loading ─────────────────────────────────────────────────────────────
-
   if (loading) return (
     <div style={S.center}>
       <div style={S.spinner} />
@@ -212,7 +205,6 @@ export default function ClinicianAccessPage() {
   )
 
   // ── Not verified gate ───────────────────────────────────────────────────
-
   if (notVerified) return (
     <div style={S.center}>
       <div style={S.gateCard}>
@@ -230,10 +222,8 @@ export default function ClinicianAccessPage() {
   )
 
   // ── Main UI ─────────────────────────────────────────────────────────────
-
   return (
     <div style={S.root}>
-
       {/* Header */}
       <header style={S.header}>
         <button onClick={() => router.push('/clinician/dashboard')} style={S.backBtn}>
@@ -263,7 +253,7 @@ export default function ClinicianAccessPage() {
       </div>
 
       {/* Success / error toast */}
-      {saveMsg   && <div style={S.toast('success')}>{saveMsg}</div>}
+      {saveMsg && <div style={S.toast('success')}>{saveMsg}</div>}
       {saveError && <div style={S.toast('error')}>{saveError}</div>}
 
       {/* Tabs */}
@@ -280,15 +270,25 @@ export default function ClinicianAccessPage() {
       </div>
 
       <div style={S.body}>
-        {/* The rest of your UI (Overview and records tabs) remains unchanged */}
-        {/* ... */}
+        {/* Render tab content */}
+        {activeTab === 'overview' && (
+          <div>
+            <p>Overview content here...</p>
+          </div>
+        )}
+        {activeTab !== 'overview' && filteredRecords(activeTab).map(r => (
+          <div key={r.id} style={S.recordCard}>
+            <h4>{r.title}</h4>
+            <p>{r.details}</p>
+            <small>By {r.clinician_name} on {formatDate(r.created_at)}</small>
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
-
 function Field({ label, children, fullWidth }: { label: string; children: React.ReactNode; fullWidth?: boolean }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5, gridColumn: fullWidth ? '1 / -1' : undefined }}>
@@ -299,10 +299,30 @@ function Field({ label, children, fullWidth }: { label: string; children: React.
 }
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
-
 const S: Record<string, any> = {
-  root:   { minHeight: '100vh', background: '#f8f9fc', fontFamily: "'DM Sans', sans-serif" },
+  root: { minHeight: '100vh', background: '#f8f9fc', fontFamily: "'DM Sans', sans-serif" },
   center: { minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' },
   spinner: { width: 36, height: 36, borderRadius: '50%', border: '3px solid #e5e7eb', borderTopColor: '#2563eb', animation: 'spin 0.8s linear infinite' },
-  // ... (rest of styles remain unchanged)
+  gateCard: { background: '#fff', padding: 24, borderRadius: 12, textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' },
+  gateTitle: { fontSize: 20, margin: 12 },
+  gateSub: { fontSize: 14, color: '#6b7280', marginBottom: 16 },
+  gateBtn: { background: '#2563eb', color: '#fff', padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer' },
+  header: { display: 'flex', alignItems: 'center', padding: 16, gap: 16, background: '#fff', borderBottom: '1px solid #e5e7eb' },
+  backBtn: { border: 'none', background: 'none', cursor: 'pointer', color: '#2563eb', fontWeight: 600 },
+  logo: { fontWeight: 700, fontSize: 18 },
+  verifiedBadge: { marginLeft: 'auto', color: 'green', fontWeight: 600 },
+  patientBanner: { display: 'flex', alignItems: 'center', padding: 16, background: '#fff', gap: 16 },
+  patientAvatar: { width: 56, height: 56, borderRadius: '50%', background: '#2563eb', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18 },
+  patientName: { fontSize: 18, fontWeight: 600 },
+  patientMeta: { fontSize: 12, color: '#6b7280' },
+  editPatientBtn: { padding: '6px 12px', cursor: 'pointer', borderRadius: 8, border: '1px solid #2563eb', background: '#fff' },
+  tabs: { display: 'flex', gap: 8, padding: 16 },
+  tab: { padding: '6px 12px', cursor: 'pointer', borderRadius: 8, border: '1px solid #ccc', background: '#fff' },
+  tabActive: { background: '#2563eb', color: '#fff', border: '1px solid #2563eb' },
+  body: { padding: 16, display: 'flex', flexDirection: 'column', gap: 12 },
+  recordCard: { background: '#fff', padding: 12, borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
+  toast: (type: 'success' | 'error') => ({
+    position: 'fixed', top: 24, right: 24, padding: 12, borderRadius: 8,
+    background: type === 'success' ? '#16a34a' : '#dc2626', color: '#fff', fontWeight: 600
+  }),
 }

@@ -12,13 +12,18 @@ export default function LoginPage() {
   const router = useRouter()
 
   const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `https://udpr.vercel.app/auth/callback`,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
       }
-    })
-  }
+    }
+  })
+  if (error) setError(error.message)
+}
 
   const handleEmailAuth = async () => {
     if (!email || !password) return

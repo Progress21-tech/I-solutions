@@ -1,15 +1,10 @@
-'use client'
+import { Suspense } from 'react'
+import ClinicianAccessClient from './ClinicianAccessClient'
 
-import { useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
-
-export default function ClinicianAccessPageClient() {
-  const searchParams = useSearchParams()
-  const [param, setParam] = useState('')
-
-  useEffect(() => {
-    setParam(searchParams.get('example') || '')
-  }, [searchParams])
-
-  return <div>Param: {param}</div>
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ClinicianAccessClient />
+    </Suspense>
+  )
 }

@@ -61,66 +61,93 @@ export default function PatientChat() {
     }
   }
 
-  const generateSummary = async (patientData: any, recordsData: any[]) => {
-    setLoading(true)
-    try {
-      const response = await fetch('/api/ai/summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patient: patientData,
-          records: recordsData,
-        }),
-      })
+const generateSummary = async (patientData: any, recordsData: any[]) => {
+  setLoading(true)
+  try {
+    const response = await fetch('/api/ai/summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patient: patientData,
+        records: recordsData,
+      }),
+    })
 
-      const data = await response.json()
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    
+    if (data.summary) {
       setMessages([{
         role: 'assistant',
         content: data.summary
       }])
-    } catch (error) {
+    } else {
       setMessages([{
         role: 'assistant',
-        content: `Hello ${patientData.full_name} 👋 I am your personal health assistant. Ask me anything about your health records and I will explain it in simple terms.`
+        content: `Hello ${patientData.full_name} 👋 I am your personal health assistant. Ask me anything about your health and I will explain it in simple terms.`
       }])
     }
-    setLoading(false)
+  } catch (error: any) {
+    console.error('Summary error:', error)
+    setMessages([{
+      role: 'assistant',
+      content: `Hello ${patientData.full_name} 👋 I am your personal health assistant. Ask me anything about your health and I will explain it in simple terms.`
+    }])
   }
+  setLoading(false)
+}
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return
+const sendMessage = async () => {
+  if (!input.trim() || loading) return
 
-    const userMessage = { role: 'user' as const, content: input }
-    const updatedMessages = [...messages, userMessage]
-    setMessages(updatedMessages)
-    setInput('')
-    setLoading(true)
+  const userMessage = { role: 'user' as const, content: input }
+  const updatedMessages = [...messages, userMessage]
+  setMessages(updatedMessages)
+  setInput('')
+  setLoading(true)
 
-    try {
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: updatedMessages,
-          patient,
-          records,
-        }),
-      })
+  try {
+    const response = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: updatedMessages,
+        patient,
+        records,
+      }),
+    })
 
-      const data = await response.json()
-      setMessages([...updatedMessages, {
-        role: 'assistant',
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    
+    if (data.reply) {
+      setMessages(prev => [...prev, {
+        role: 'assistant' as const,
         content: data.reply
       }])
-    } catch (error) {
-      setMessages([...updatedMessages, {
-        role: 'assistant',
-        content: 'Sorry I could not process that. Please try again.'
+    } else if (data.error) {
+      setMessages(prev => [...prev, {
+        role: 'assistant' as const,
+        content: `Error: ${data.error}`
       }])
     }
-    setLoading(false)
-  }
 
+  } catch (error: any) {
+    console.error('Chat error:', error)
+    setMessages(prev => [...prev, {
+      role: 'assistant' as const,
+      content: `Something went wrong: ${error.message}. Please try again.`
+    }])
+  }
+  
+  setLoading(false)
+}
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}

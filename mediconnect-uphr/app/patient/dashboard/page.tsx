@@ -240,14 +240,14 @@ export default function PatientDashboard() {
 {/* AI Summary Button */}
 <button
   onClick={() => router.push('/patient/chat')}
-        {/* AI Summary Button */}
-        <button
-          onClick={() => router.push('/patient/chat')}
-          className="w-full bg-blue-600 text-white py-4 rounded-2xl font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
-        >
-          <span>🤖</span>
-          Ask AI About Your Health
-        </button>
+       {/* AI Summary Button */}
+<button
+  onClick={() => router.push('/patient/chat')}
+  className="w-full bg-blue-600 text-white py-4 rounded-2xl font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
+>
+  <span>🤖</span>
+  Ask AI About Your Health
+</button>
       </div>
     </div>
   )

@@ -26,51 +26,71 @@ export default function LoginPage() {
 }
 
   const handleEmailAuth = async () => {
-    if (!email || !password) return
-    setLoading(true)
-    setError('')
-
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
-      })
-      if (error) {
-        setError(error.message)
-      } else {
-        setError('Check your email for a confirmation link!')
-      }
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-      if (error) {
-        setError(error.message)
-      } else {
-        // Check role and redirect
-        const { data: { user } } = await supabase.auth.getUser()
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user?.id)
-          .single()
-
-        if (!profile) {
-          router.push('/register/role')
-        } else if (profile.role === 'patient') {
-          router.push('/patient/dashboard')
-        } else {
-          router.push('/clinician/dashboard')
-        }
-      }
-    }
-    setLoading(false)
+  if (!email || !password) {
+    setError('Please fill in all fields')
+    return
   }
 
+  if (password.length < 8) {
+    setError('Password must be at least 8 characters')
+    return
+  }
+
+  if (!/\d/.test(password)) {
+    setError('Password must contain at least one number')
+    return
+  }
+
+  setLoading(true)
+  setError('')
+
+  if (isSignUp) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+      return
+    }
+
+    if (data.user) {
+      router.push('/register/role')
+    }
+
+  } else {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+      return
+    }
+
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single()
+
+      if (!profile) {
+        router.push('/register/role')
+      } else if (profile.role === 'patient') {
+        router.push('/patient/dashboard')
+      } else {
+        router.push('/clinician/dashboard')
+      }
+    }
+  }
+
+  setLoading(false)
+}
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">

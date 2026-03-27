@@ -19,10 +19,21 @@ interface Record {
   created_at: string
 }
 
+interface AccessLog {
+  id: string
+  accessed_at: string
+  action: string
+  clinicians: {
+    full_name: string
+    hospital_name: string
+  }
+}
+
 export default function PatientDashboard() {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [records, setRecords] = useState<Record[]>([])
   const [loading, setLoading] = useState(true)
+  const [accessLogs, setAccessLogs] = useState<AccessLog[]>([])
   const router = useRouter()
 
   useEffect(() => {
@@ -53,6 +64,22 @@ export default function PatientDashboard() {
         .order('created_at', { ascending: false })
 
       setRecords(recordsData || [])
+      const { data: logsData } = await supabase
+    .from('access_logs')
+    .select(`
+      id,
+      accessed_at,
+      action,
+      clinicians (
+        full_name,
+        hospital_name
+      )
+    `)
+    .eq('patient_id', patientData.id)
+    .order('accessed_at', { ascending: false })
+    .limit(5)
+
+  setAccessLogs(logsData || [])
     }
 
     setLoading(false)

@@ -9,17 +9,17 @@ export default function RoleSelectionPage() {
 
   const selectRole = async (role: 'patient' | 'clinician') => {
     setLoading(true)
-
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Save role now — detailed info collected in the next step
-    await supabase.from('profiles').upsert({ id: user?.id, role })
+    await supabase.from('profiles').upsert({
+      id: user?.id,
+      role
+    })
 
-    // Route to role-specific onboarding form
     if (role === 'patient') {
-      router.push('/register/patient')
+      router.push('/register/onboarding/patient')
     } else {
-      router.push('/register/clinician')
+      router.push('/register/onboarding/clinician')
     }
   }
 
@@ -28,10 +28,11 @@ export default function RoleSelectionPage() {
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-blue-600">UPHR</h1>
-          <p className="text-gray-500 mt-2">Who are you?</p>
-          <p className="text-sm text-gray-400 mt-1">Select your role to continue</p>
+          <p className="text-gray-500 mt-2">Welcome — let's get you set up</p>
+          <p className="text-sm text-gray-400 mt-1">
+            Who are you joining as?
+          </p>
         </div>
-
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => selectRole('patient')}
@@ -41,7 +42,6 @@ export default function RoleSelectionPage() {
             <span className="text-4xl">🧑‍⚕️</span>
             <span>I am a Patient</span>
           </button>
-
           <button
             onClick={() => selectRole('clinician')}
             disabled={loading}
@@ -51,9 +51,10 @@ export default function RoleSelectionPage() {
             <span>I am a Clinician</span>
           </button>
         </div>
-
         {loading && (
-          <p className="text-center text-gray-400 text-sm mt-6">Setting up your account...</p>
+          <p className="text-center text-gray-400 text-sm mt-6">
+            Setting up your account...
+          </p>
         )}
       </div>
     </div>

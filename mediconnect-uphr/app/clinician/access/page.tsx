@@ -31,6 +31,7 @@ interface MedicalRecord {
   clinician_id: string
 }
 
+// TabId is only for UI tabs; we map it to the actual record_type when filtering
 type TabId = 'overview' | 'diagnosis' | 'prescription' | 'lab' | 'note'
 
 const RECORD_TABS: { id: TabId; label: string; icon: string }[] = [
@@ -40,6 +41,13 @@ const RECORD_TABS: { id: TabId; label: string; icon: string }[] = [
   { id: 'lab', label: 'Lab Results', icon: '🔬' },
   { id: 'note', label: "Doctor's Notes", icon: '📝' },
 ]
+
+const TAB_TO_RECORD_TYPE: Record<Exclude<TabId, 'overview'>, MedicalRecord['record_type']> = {
+  diagnosis: 'diagnosis',
+  prescription: 'prescription',
+  lab: 'lab_result',
+  note: 'note',
+}
 
 const BLOOD_TYPES = ['A+','A-','B+','B-','AB+','AB-','O+','O-','Unknown']
 const GENDERS     = ['Male','Female','Non-binary','Prefer not to say']
@@ -190,8 +198,12 @@ export default function ClinicianAccessPage() {
     setSaving(false)
   }
 
-  const filteredRecords = (type: MedicalRecord['record_type']) =>
-    records.filter(r => r.record_type === type)
+  // ── Filter records by tab ──────────────────────────────────────────────
+  const filteredRecords = (tab: TabId) => {
+    if (tab === 'overview') return []
+    const type = TAB_TO_RECORD_TYPE[tab as Exclude<TabId, 'overview'>]
+    return records.filter(r => r.record_type === type)
+  }
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })

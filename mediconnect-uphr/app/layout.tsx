@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { LanguageProvider } from '@/components/LanguageProvider'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export const metadata: Metadata = {
   title: "UPHR - Unified Patient Health Record",
@@ -14,7 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en-NG">
-      <body><LanguageProvider>{children}</LanguageProvider></body>
+      <body>
+        <LanguageProvider>
+          <div className="fixed right-4 top-4 z-50"><LanguageSwitcher /></div>
+          {children}
+        </LanguageProvider>
+      </body>
     </html>
   );
 }

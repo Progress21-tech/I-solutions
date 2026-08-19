@@ -23,7 +23,7 @@ export default function ClinicianOnboardingPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Please sign in before completing onboarding.')
-      const { data: clinician, error: clinicianError } = await supabase.from('clinicians').upsert({ user_id: user.id, full_name: form.full_name.trim(), hospital_name: form.hospital_name.trim(), specialty: form.specialty, license_number: form.license_number.trim(), years_experience: form.years_experience ? Number(form.years_experience) : null, practice_location: form.practice_location.trim(), verification_status: 'pending' }).select('id').single()
+      const { data: clinician, error: clinicianError } = await supabase.from('clinicians').upsert({ user_id: user.id, full_name: form.full_name.trim(), hospital_name: form.hospital_name.trim(), specialty: form.specialty, license_number: form.license_number.trim(), years_experience: form.years_experience ? Number(form.years_experience) : null, practice_location: form.practice_location.trim(), verification_status: 'pending' }, { onConflict: 'user_id' }).select('id').single()
       if (clinicianError) throw clinicianError
       const { error: requestError } = await supabase.from('verification_requests').upsert({ clinician_id: clinician.id, submitted_license_number: form.license_number.trim(), status: 'pending' }, { onConflict: 'clinician_id' })
       if (requestError) throw requestError

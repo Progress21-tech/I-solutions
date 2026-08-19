@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
@@ -8,7 +8,7 @@ const CATEGORIES = ['Pharmacy', 'Diagnostic lab', 'Clinic', 'Hospital', 'General
 const STEPS = ['name', 'category', 'registration', 'location'] as const
 type Step = typeof STEPS[number]
 
-export default function BusinessSetupPage() {
+function BusinessSetupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnPath = searchParams.get('next') === 'clinician' ? '/clinician/pending' : '/patient/dashboard'
@@ -156,5 +156,14 @@ export default function BusinessSetupPage() {
         </button>
       </section>
     </main>
+  )
+}
+
+// Wrap the component using useSearchParams in a Suspense boundary
+export default function BusinessSetupPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BusinessSetupForm />
+    </Suspense>
   )
 }

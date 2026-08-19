@@ -1,68 +1,32 @@
-import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
-import { defaultLanguage, supportedLanguages, type LanguageCode } from '@/lib/languages'
+import { getAIProvider, parseLanguage, patientAssistantSystemPrompt, type AIMessage } from '@/lib/ai/provider'
 
 export async function POST(req: Request) {
   try {
-    const { messages, patient, records, language = defaultLanguage } = await req.json()
-    const languageCode = language in supportedLanguages ? language as LanguageCode : defaultLanguage
-    const selectedLanguage = supportedLanguages[languageCode]
+    const { messages, patient, records, language } = await req.json()
+    const selectedLanguage = parseLanguage(language)
+    const safeMessages: AIMessage[] = Array.isArray(messages)
+      ? messages.slice(-20).flatMap((message: unknown) => {
+          if (!message || typeof message !== 'object') return []
+          const candidate = message as { role?: unknown; content?: unknown }
+          if ((candidate.role !== 'user' && candidate.role !== 'assistant') || typeof candidate.content !== 'string') return []
+          return [{ role: candidate.role, content: candidate.content.slice(0, 4000) }]
+        })
+      : []
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json(
-        { error: 'API key not configured' },
-        { status: 500 }
-      )
+    if (!safeMessages.length) {
+      return NextResponse.json({ error: 'Please provide a message for the health assistant.' }, { status: 400 })
     }
 
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-    const systemPrompt = `You are a friendly, culturally aware health assistant for ${patient?.full_name || 'this patient'} in Nigeria.
-You help patients understand their medical records in simple, clear language.
-
-Language requirement:
-- Reply in ${selectedLanguage.name} (${selectedLanguage.locale}), even if the medical record is written in another language.
-- Use natural, respectful Nigerian ${selectedLanguage.name}; preserve important clinical terms in English in parentheses when that prevents ambiguity.
-- If a message mixes languages, answer in ${selectedLanguage.name} unless the patient explicitly asks for another language.
-
-Patient Information:
-- Blood Group: ${patient?.blood_group || 'Unknown'}
-- Genotype: ${patient?.genotype || 'Unknown'}
-- Known Allergies: ${patient?.allergies || 'None recorded'}
-- Chronic Conditions: ${patient?.chronic_conditions?.join(', ') || 'None recorded'}
-
-Medical Records:
-${records?.length > 0 ? JSON.stringify(records, null, 2) : 'No records yet'}
-
-Rules:
-- Always use simple non-technical language
-- Be warm supportive and encouraging
-- Never diagnose or prescribe
-- Always recommend consulting a doctor for medical decisions
-- Keep responses concise and easy to understand
-- Always include this safety note, translated naturally into ${selectedLanguage.name}: "This information does not replace advice from a qualified clinician."
-- For urgent symptoms, advise the patient to seek immediate local emergency care.`
-
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: (Array.isArray(messages) ? messages : []).slice(-20).map((m: any) => ({
-        role: m.role,
-        content: m.content
-      }))
+    const reply = await getAIProvider().generateText({
+      system: patientAssistantSystemPrompt(patient, Array.isArray(records) ? records : [], selectedLanguage),
+      messages: safeMessages,
     })
 
-    const reply = response.content[0].type === 'text'
-      ? response.content[0].text
-      : 'I could not generate a response. Please try again.'
-
-    return NextResponse.json({ reply, language: languageCode })
-
-  } catch (error: any) {
+    if (!reply) throw new Error('AI provider returned no text')
+    return NextResponse.json({ reply, language: selectedLanguage })
+  } catch (error) {
     console.error('AI chat error:', error)
-    return NextResponse.json(
-      { error: 'The health assistant is temporarily unavailable. Please try again or contact a clinician for medical help.', code: 'AI_UNAVAILABLE' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'The health assistant is temporarily unavailable. Please try again or contact a clinician for medical help.', code: 'AI_UNAVAILABLE' }, { status: 503 })
   }
 }

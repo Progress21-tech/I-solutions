@@ -1,9 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+import { defaultLanguage, supportedLanguages, type LanguageCode } from '@/lib/languages'
 
 export async function POST(req: Request) {
   try {
-    const { patient, records } = await req.json()
+    const { patient, records, language = defaultLanguage } = await req.json()
+    const languageCode = language in supportedLanguages ? language as LanguageCode : defaultLanguage
+    const selectedLanguage = supportedLanguages[languageCode]
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
@@ -12,9 +15,7 @@ export async function POST(req: Request) {
       )
     }
 
-   const anthropic = new Anthropic({
-  apiKey: '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'
-})
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -33,12 +34,13 @@ Chronic Conditions: ${patient?.chronic_conditions?.join(', ') || 'None recorded'
 Medical Records:
 ${records?.length > 0 ? JSON.stringify(records, null, 2) : 'No records uploaded yet'}
 
-Please summarize this patient's health in simple terms they can understand.
+Please summarize this patient's health in simple terms they can understand in ${selectedLanguage.name} (${selectedLanguage.locale}).
+- Use natural, respectful Nigerian ${selectedLanguage.name}; retain important clinical terms in English in parentheses if needed for safety.
 - Avoid medical jargon
 - Highlight key conditions and medications if any
 - Mention one or two things they should monitor
 - Be warm and reassuring
-- End with: "Remember to always consult your doctor for medical advice."
+- End with a natural ${selectedLanguage.name} version of: "This information does not replace advice from a qualified clinician."
 - Keep it under 150 words`
         }
       ]
@@ -48,12 +50,12 @@ Please summarize this patient's health in simple terms they can understand.
       ? message.content[0].text
       : 'Unable to generate summary.'
 
-    return NextResponse.json({ summary })
+    return NextResponse.json({ summary, language: languageCode })
 
   } catch (error: any) {
     console.error('AI summary error:', error)
     return NextResponse.json(
-      { error: error?.message || 'Unknown error' },
+      { error: 'The health summary is temporarily unavailable. Please consult a clinician for questions about your records.', code: 'AI_UNAVAILABLE' },
       { status: 500 }
     )
   }

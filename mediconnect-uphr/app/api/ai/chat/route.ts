@@ -1,9 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+import { defaultLanguage, supportedLanguages, type LanguageCode } from '@/lib/languages'
 
 export async function POST(req: Request) {
   try {
-    const { messages, patient, records } = await req.json()
+    const { messages, patient, records, language = defaultLanguage } = await req.json()
+    const languageCode = language in supportedLanguages ? language as LanguageCode : defaultLanguage
+    const selectedLanguage = supportedLanguages[languageCode]
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
@@ -12,11 +15,14 @@ export async function POST(req: Request) {
       )
     }
 
-   const anthropic = new Anthropic({
-  apiKey: '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'
-})
-    const systemPrompt = `You are a friendly health assistant for ${patient?.full_name || 'this patient'}. 
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const systemPrompt = `You are a friendly, culturally aware health assistant for ${patient?.full_name || 'this patient'} in Nigeria.
 You help patients understand their medical records in simple, clear language.
+
+Language requirement:
+- Reply in ${selectedLanguage.name} (${selectedLanguage.locale}), even if the medical record is written in another language.
+- Use natural, respectful Nigerian ${selectedLanguage.name}; preserve important clinical terms in English in parentheses when that prevents ambiguity.
+- If a message mixes languages, answer in ${selectedLanguage.name} unless the patient explicitly asks for another language.
 
 Patient Information:
 - Blood Group: ${patient?.blood_group || 'Unknown'}
@@ -33,13 +39,14 @@ Rules:
 - Never diagnose or prescribe
 - Always recommend consulting a doctor for medical decisions
 - Keep responses concise and easy to understand
-- Add a disclaimer when discussing specific health conditions`
+- Always include this safety note, translated naturally into ${selectedLanguage.name}: "This information does not replace advice from a qualified clinician."
+- For urgent symptoms, advise the patient to seek immediate local emergency care.`
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
       system: systemPrompt,
-      messages: messages.map((m: any) => ({
+      messages: (Array.isArray(messages) ? messages : []).slice(-20).map((m: any) => ({
         role: m.role,
         content: m.content
       }))
@@ -49,12 +56,12 @@ Rules:
       ? response.content[0].text
       : 'I could not generate a response. Please try again.'
 
-    return NextResponse.json({ reply })
+    return NextResponse.json({ reply, language: languageCode })
 
   } catch (error: any) {
     console.error('AI chat error:', error)
     return NextResponse.json(
-      { reply: `Error: ${error?.message || 'Unknown error occurred'}` },
+      { error: 'The health assistant is temporarily unavailable. Please try again or contact a clinician for medical help.', code: 'AI_UNAVAILABLE' },
       { status: 500 }
     )
   }

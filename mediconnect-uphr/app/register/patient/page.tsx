@@ -1,236 +1,65 @@
 'use client'
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-type FormData = {
-  full_name: string
-  date_of_birth: string
-  blood_group: string
-  allergies: string
-  chronic_conditions: string
-}
-
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-
-const STEPS = [
-  {
-    field: 'full_name',
-    title: 'What is your name?',
-    subtitle: 'This is how you\'ll appear in your health records.',
-    required: true,
-  },
-  {
-    field: 'date_of_birth',
-    title: 'Date of birth?',
-    subtitle: 'Used to calculate age-based risk factors.',
-    required: true,
-  },
-  {
-    field: 'blood_group',
-    title: 'What is your blood group?',
-    subtitle: 'Critical for emergency care decisions.',
-    required: false,
-  },
-  {
-    field: 'allergies',
-    title: 'Any known allergies?',
-    subtitle: 'e.g. Penicillin, Peanuts. Type "None" if not applicable.',
-    required: false,
-  },
-  {
-    field: 'chronic_conditions',
-    title: 'Any chronic conditions?',
-    subtitle: 'e.g. Type 2 Diabetes, Hypertension. Type "None" if not applicable.',
-    required: false,
-  },
-]
+const GENOTYPES = ['AA', 'AS', 'AC', 'SS', 'SC', 'CC']
+const CONDITIONS = ['Diabetes', 'Hypertension', 'Asthma', 'Sickle cell', 'Heart disease', 'Kidney disease', 'HIV/AIDS', 'Tuberculosis', 'Cancer', 'Epilepsy', 'Other']
+const STEPS = ['name', 'birth', 'blood', 'genotype', 'allergies', 'conditions', 'emergency', 'location', 'business'] as const
+type Step = typeof STEPS[number]
 
 export default function PatientOnboardingPage() {
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [form, setForm] = useState<FormData>({
-    full_name: '',
-    date_of_birth: '',
-    blood_group: '',
-    allergies: '',
-    chronic_conditions: '',
-  })
-
+  const [form, setForm] = useState({ full_name: '', date_of_birth: '', blood_group: '', genotype: '', allergies: '', chronic_conditions: [] as string[], emergency_contact_name: '', emergency_contact_phone: '', location_label: '', latitude: null as number | null, longitude: null as number | null, is_business_owner: false })
   const current = STEPS[step]
-  const isLast = step === STEPS.length - 1
-  const progress = Math.round(((step + 1) / STEPS.length) * 100)
+  const optional = !['name', 'birth', 'business'].includes(current)
 
-  const canProceed = () => {
-    if (!current.required) return true
-    const val = form[current.field as keyof FormData]
-    return val.trim() !== ''
+  const canContinue = () => {
+    if (current === 'name') return Boolean(form.full_name.trim())
+    if (current === 'birth') return Boolean(form.date_of_birth)
+    return true
   }
-
-  const handleNext = async () => {
-    if (isLast) {
-      await handleSubmit()
-    } else {
-      setStep((s) => s + 1)
-    }
-  }
-
-  const handleSubmit = async () => {
-    setLoading(true)
+  const toggleCondition = (condition: string) => setForm((value) => ({ ...value, chronic_conditions: value.chronic_conditions.includes(condition) ? value.chronic_conditions.filter((item) => item !== condition) : [...value.chronic_conditions, condition] }))
+  const useLocation = () => {
     setError('')
+    if (!navigator.geolocation) { setError('Location is unavailable in this browser. Please enter your town or city below.'); return }
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => setForm((value) => ({ ...value, latitude: coords.latitude, longitude: coords.longitude, location_label: value.location_label || 'Current location shared' })),
+      () => setError('We could not access your location. Please enter your town or city below.'),
+      { enableHighAccuracy: false, timeout: 10000 },
+    )
+  }
+  const save = async () => {
+    setLoading(true); setError('')
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No authenticated user found.')
-
-      const { error: patientError } = await supabase.from('patients').upsert({
-        user_id: user.id,
-        full_name: form.full_name,
-        date_of_birth: form.date_of_birth || null,
-        blood_group: form.blood_group || null,
-        allergies: form.allergies || null,
-        chronic_conditions: form.chronic_conditions || null,
-      })
-
+      if (!user) throw new Error('Please sign in before completing onboarding.')
+      const { error: patientError } = await supabase.from('patients').upsert({ user_id: user.id, full_name: form.full_name.trim(), date_of_birth: form.date_of_birth, blood_group: form.blood_group || null, genotype: form.genotype || null, allergies: form.allergies.trim() || null, chronic_conditions: form.chronic_conditions, emergency_contact_name: form.emergency_contact_name.trim() || null, emergency_contact_phone: form.emergency_contact_phone.trim() || null, location_label: form.location_label.trim() || null, latitude: form.latitude, longitude: form.longitude })
       if (patientError) throw patientError
-
-      router.push('/patient/dashboard')
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.')
-      setLoading(false)
-    }
+      router.push(form.is_business_owner ? '/register/business' : '/patient/dashboard')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to save your profile. Please try again.') }
+    finally { setLoading(false) }
   }
+  const next = () => step === STEPS.length - 1 ? void save() : setStep((value) => value + 1)
+  const title: Record<Step, string> = { name: 'What is your name?', birth: 'What is your date of birth?', blood: 'What is your blood group?', genotype: 'What is your genotype?', allergies: 'Do you have any known allergies?', conditions: 'Do you have a long-term health condition?', emergency: 'Who should we contact in an emergency?', location: 'Where should we look for care near you?', business: 'Do you also manage a business?' }
+  const subtitle: Record<Step, string> = { name: 'This appears on your health record.', birth: 'This helps clinicians understand age-related risks.', blood: 'This can be important in an emergency.', genotype: 'You may skip this if you do not know.', allergies: 'Include medicines, foods, or other triggers. You can update this later.', conditions: 'Select any that apply. You can skip and update later.', emergency: 'Optional, but helpful if you ever need urgent care.', location: 'We use this only to show nearby doctors, hospitals, labs, and pharmacies.', business: 'Business access is an add-on to your patient account.' }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-blue-600">UPHR</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Patient Onboarding</p>
-          </div>
-          <span className="text-sm text-gray-400 font-medium">
-            {step + 1} / {STEPS.length}
-          </span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="w-full bg-gray-100 rounded-full h-1.5 mb-8">
-          <div
-            className="bg-blue-600 h-1.5 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        {/* Question */}
-        <h2 className="text-xl font-semibold text-gray-800 mb-1">
-          {current.title}
-        </h2>
-        <p className="text-sm text-gray-400 mb-6">{current.subtitle}</p>
-
-        {/* --- Blood group picker --- */}
-        {current.field === 'blood_group' && (
-          <div className="grid grid-cols-4 gap-2 mb-6">
-            {BLOOD_GROUPS.map((bg) => (
-              <button
-                key={bg}
-                onClick={() => setForm((f) => ({ ...f, blood_group: bg }))}
-                className={`py-3 rounded-xl border-2 font-semibold text-sm transition ${
-                  form.blood_group === bg
-                    ? 'border-blue-600 bg-blue-600 text-white'
-                    : 'border-gray-200 text-gray-600 hover:border-blue-300'
-                }`}
-              >
-                {bg}
-              </button>
-            ))}
-            <button
-              onClick={() => setForm((f) => ({ ...f, blood_group: 'Unknown' }))}
-              className={`col-span-4 py-3 rounded-xl border-2 font-medium text-sm transition ${
-                form.blood_group === 'Unknown'
-                  ? 'border-blue-600 bg-blue-600 text-white'
-                  : 'border-gray-200 text-gray-500 hover:border-blue-300'
-              }`}
-            >
-              I don't know my blood group
-            </button>
-          </div>
-        )}
-
-        {/* --- Date picker --- */}
-        {current.field === 'date_of_birth' && (
-          <input
-            type="date"
-            value={form.date_of_birth}
-            max={new Date().toISOString().split('T')[0]}
-            onChange={(e) => setForm((f) => ({ ...f, date_of_birth: e.target.value }))}
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:border-blue-600 focus:outline-none mb-6 transition"
-          />
-        )}
-
-        {/* --- Text inputs --- */}
-        {(current.field === 'full_name' ||
-          current.field === 'allergies' ||
-          current.field === 'chronic_conditions') && (
-          <textarea
-            rows={current.field === 'full_name' ? 1 : 3}
-            placeholder={
-              current.field === 'full_name'
-                ? 'e.g. Amara Johnson'
-                : current.field === 'allergies'
-                ? 'e.g. Penicillin, Latex, Peanuts'
-                : 'e.g. Type 2 Diabetes, Hypertension'
-            }
-            value={form[current.field as keyof FormData]}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, [current.field]: e.target.value }))
-            }
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:border-blue-600 focus:outline-none mb-6 transition resize-none"
-          />
-        )}
-
-        {/* Optional tag */}
-        {!current.required && (
-          <p className="text-xs text-gray-400 -mt-4 mb-6">
-            Optional — you can update this later from your dashboard.
-          </p>
-        )}
-
-        {/* Error */}
-        {error && (
-          <p className="text-sm text-red-500 mb-4 bg-red-50 px-4 py-2 rounded-lg">
-            {error}
-          </p>
-        )}
-
-        {/* Navigation */}
-        <div className="flex gap-3">
-          {step > 0 && (
-            <button
-              onClick={() => setStep((s) => s - 1)}
-              disabled={loading}
-              className="flex-1 py-3 border-2 border-gray-200 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition disabled:opacity-50"
-            >
-              ← Back
-            </button>
-          )}
-          <button
-            onClick={handleNext}
-            disabled={!canProceed() || loading}
-            className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-40"
-          >
-            {loading
-              ? 'Saving...'
-              : isLast
-              ? 'Go to Dashboard →'
-              : 'Continue →'}
-          </button>
-        </div>
-
-      </div>
-    </div>
-  )
+  return <main className="min-h-screen bg-slate-50 px-4 py-10"><section className="mx-auto w-full max-w-xl rounded-2xl bg-white p-6 shadow-sm sm:p-8"><header className="mb-8 flex items-center justify-between"><div><h1 className="text-2xl font-bold text-blue-700">UDPR</h1><p className="text-sm text-slate-700">Patient onboarding</p></div><span className="text-sm font-medium text-slate-700">{step + 1} / {STEPS.length}</span></header><div className="mb-8 h-2 rounded-full bg-slate-200"><div className="h-2 rounded-full bg-blue-700 transition-all" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} /></div><h2 className="text-xl font-semibold text-slate-950">{title[current]}</h2><p className="mb-6 mt-1 text-sm text-slate-700">{subtitle[current]}</p>
+    {current === 'name' && <input autoFocus value={form.full_name} onChange={(event) => setForm({ ...form, full_name: event.target.value })} placeholder="e.g. Amara Johnson" className="field" />}
+    {current === 'birth' && <input type="date" value={form.date_of_birth} max={new Date().toISOString().split('T')[0]} onChange={(event) => setForm({ ...form, date_of_birth: event.target.value })} className="field" />}
+    {current === 'blood' && <div className="grid grid-cols-4 gap-2">{BLOOD_GROUPS.map((group) => <button key={group} onClick={() => setForm({ ...form, blood_group: group })} className={`choice ${form.blood_group === group ? 'choice-selected' : ''}`}>{group}</button>)}<button onClick={() => setForm({ ...form, blood_group: '' })} className="choice col-span-4">I do not know</button></div>}
+    {current === 'genotype' && <div className="grid grid-cols-3 gap-2">{GENOTYPES.map((genotype) => <button key={genotype} onClick={() => setForm({ ...form, genotype })} className={`choice ${form.genotype === genotype ? 'choice-selected' : ''}`}>{genotype}</button>)}<button onClick={() => setForm({ ...form, genotype: '' })} className="choice col-span-3">I do not know</button></div>}
+    {current === 'allergies' && <textarea value={form.allergies} onChange={(event) => setForm({ ...form, allergies: event.target.value })} placeholder="e.g. Penicillin, latex, peanuts" className="field min-h-28" />}
+    {current === 'conditions' && <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CONDITIONS.map((condition) => <button key={condition} onClick={() => toggleCondition(condition)} className={`choice text-left ${form.chronic_conditions.includes(condition) ? 'choice-selected' : ''}`}>{condition}</button>)}</div>}
+    {current === 'emergency' && <div className="space-y-3"><input value={form.emergency_contact_name} onChange={(event) => setForm({ ...form, emergency_contact_name: event.target.value })} placeholder="Contact name" className="field" /><input type="tel" value={form.emergency_contact_phone} onChange={(event) => setForm({ ...form, emergency_contact_phone: event.target.value })} placeholder="Phone number" className="field" /></div>}
+    {current === 'location' && <div className="space-y-3"><button onClick={useLocation} className="w-full rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white hover:bg-blue-800">Use my current location</button><input value={form.location_label} onChange={(event) => setForm({ ...form, location_label: event.target.value })} placeholder="Or enter a town, city, or address" className="field" /></div>}
+    {current === 'business' && <div className="grid grid-cols-2 gap-3"><button onClick={() => setForm({ ...form, is_business_owner: false })} className={`choice ${!form.is_business_owner ? 'choice-selected' : ''}`}>No, continue as a patient</button><button onClick={() => setForm({ ...form, is_business_owner: true })} className={`choice ${form.is_business_owner ? 'choice-selected' : ''}`}>Yes, set up my business</button></div>}
+    {optional && <p className="mt-4 text-xs text-slate-700">Optional — you can complete this later.</p>}{error && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+    <footer className="mt-8 flex gap-3">{step > 0 && <button onClick={() => setStep((value) => value - 1)} disabled={loading} className="flex-1 rounded-xl border border-slate-300 px-4 py-3 font-semibold text-slate-800 hover:bg-slate-50">Back</button>}<button onClick={next} disabled={!canContinue() || loading} className="flex-1 rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-50">{loading ? 'Saving…' : step === STEPS.length - 1 ? 'Finish onboarding' : optional ? 'Continue or skip' : 'Continue'}</button></footer>
+  </section></main>
 }

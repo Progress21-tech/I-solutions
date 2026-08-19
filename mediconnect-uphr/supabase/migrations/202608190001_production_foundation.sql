@@ -47,7 +47,7 @@ create table if not exists public.clinicians (
 
 create table if not exists public.verification_requests (
   id uuid primary key default gen_random_uuid(),
-  clinician_id uuid references public.clinicians(id) on delete cascade,
+  clinician_id uuid unique references public.clinicians(id) on delete cascade,
   business_id uuid,
   submitted_license_number text,
   evidence_path text,

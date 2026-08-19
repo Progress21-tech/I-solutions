@@ -1,0 +1,14 @@
+# Dependencies are installed locally and must not be committed.
+node_modules/
+
+# Local environment files can contain credentials.
+.env*
+!.env.example
+
+# Build output and local tooling state.
+.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+.vercel/

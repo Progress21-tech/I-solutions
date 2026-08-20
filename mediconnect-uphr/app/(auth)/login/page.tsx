@@ -12,97 +12,85 @@ export default function LoginPage() {
   const router = useRouter()
 
   const handleGoogleLogin = async () => {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `https://udpr.vercel.app/auth/callback`,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `https://udpr.vercel.app/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        }
       }
-    }
-  })
-  if (error) setError(error.message)
-}
+    })
+    if (error) setError(error.message)
+  }
 
   const handleEmailAuth = async () => {
-  if (!email || !password) {
-    setError('Please fill in all fields')
-    return
-  }
-
-  if (password.length < 8) {
-    setError('Password must be at least 8 characters')
-    return
-  }
-
-  if (!/\d/.test(password)) {
-    setError('Password must contain at least one number')
-    return
-  }
-
-  setLoading(true)
-  setError('')
-
-  if (isSignUp) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
+    if (!email || !password) {
+      setError('Please fill in all fields')
       return
     }
 
-    if (data.user) {
-      router.push('/register/role')
-    }
-
-  } else {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters')
       return
     }
 
-    if (data.user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single()
+    if (!/\d/.test(password)) {
+      setError('Password must contain at least one number')
+      return
+    }
 
-      if (!profile) {
+    setLoading(true)
+    setError('')
+
+    if (isSignUp) {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+        return
+      }
+
+      if (data.user) {
         router.push('/register/role')
-      } else if (profile.role === 'patient') {
-        router.push('/patient/dashboard')
-      } else {
-        router.push('/clinician/dashboard')
+      }
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+        return
+      }
+
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+
+        if (!profile) {
+          router.push('/register/role')
+        } else if (profile.role === 'patient') {
+          router.push('/patient/dashboard')
+        } else {
+          router.push('/clinician/dashboard')
+        }
       }
     }
+
+    setLoading(false)
   }
 
-  setLoading(false)
-}
-
-  {/* Password requirements */}
-{isSignUp && password.length > 0 && (
-  <div className="space-y-1">
-    <p className={`text-xs flex items-center gap-2 ${password.length >= 8 ? 'text-green-500' : 'text-red-400'}`}>
-      {password.length >= 8 ? '✓' : '✗'} At least 8 characters
-    </p>
-    <p className={`text-xs flex items-center gap-2 ${/\d/.test(password) ? 'text-green-500' : 'text-red-400'}`}>
-      {/\d/.test(password) ? '✓' : '✗'} Contains at least one number
-    </p>
-  </div>
-)}
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
@@ -121,7 +109,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email address"
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-600"
+            className="w-full bg-white border-2 border-gray-400 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-600"
           />
           <input
             type="password"
@@ -129,8 +117,21 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             onKeyDown={(e) => e.key === 'Enter' && handleEmailAuth()}
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-600"
+            className="w-full bg-white border-2 border-gray-400 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-600"
           />
+
+          {/* Password requirements */}
+          {isSignUp && password.length > 0 && (
+            <div className="space-y-1">
+              <p className={`text-xs flex items-center gap-2 ${password.length >= 8 ? 'text-green-500' : 'text-red-400'}`}>
+                {password.length >= 8 ? '✓' : '✗'} At least 8 characters
+              </p>
+              <p className={`text-xs flex items-center gap-2 ${/\d/.test(password) ? 'text-green-500' : 'text-red-400'}`}>
+                {/\d/.test(password) ? '✓' : '✗'} Contains at least one number
+              </p>
+            </div>
+          )}
+
           {error && (
             <p className={`text-sm ${error.includes('Check your email') ? 'text-green-500' : 'text-red-500'}`}>
               {error}

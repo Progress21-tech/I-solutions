@@ -91,18 +91,9 @@ export default function ClinicianDashboard() {
     if (!searchId.trim()) return
     setSearching(true)
     setError('')
-    const { data: patient } = await supabase
-      .from('patients')
-      .select('*')
-      .eq('health_id', searchId.trim().toUpperCase())
-      .single()
-
-    if (!patient) {
-      setError('No patient found with that Health ID. Please check and try again.')
-      setSearching(false)
-      return
-    }
-    router.push(`/clinician/access?patient_id=${patient.health_id}`)
+    // Patient lookup happens in the consent-gated RPC. A clinician must not be
+    // able to enumerate patient profiles directly from the browser.
+    router.push(`/clinician/access?patient_id=${encodeURIComponent(searchId.trim().toUpperCase())}`)
     setSearching(false)
   }
 

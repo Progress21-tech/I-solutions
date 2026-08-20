@@ -327,6 +327,10 @@ export default function PatientDashboard() {
 
         {/* AI Button */}
         <div className="bg-white rounded-2xl p-6 text-center">
+          <button onClick={() => router.push('/patient/wallet')} className="w-full border-2 border-emerald-700 text-emerald-800 py-4 rounded-2xl font-medium hover:bg-emerald-50 transition">View wallet & health points</button>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 text-center">
           <button
             onClick={() => router.push('/patient/care')}
             className="w-full border-2 border-blue-700 text-blue-800 py-4 rounded-2xl font-medium hover:bg-blue-50 transition"

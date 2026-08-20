@@ -11,7 +11,7 @@ function UploadRecord() {
   const [patientName, setPatientName] = useState(''), [recordType, setRecordType] = useState('diagnosis'), [summary, setSummary] = useState(''), [details, setDetails] = useState(''), [file, setFile] = useState<File | null>(null), [loading, setLoading] = useState(true), [submitting, setSubmitting] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState('')
 
   useEffect(() => { void load() }, [])
-  const load = async () => {
+  async function load() {
     if (!patientHealthId) { setError('A patient Health ID is required.'); setLoading(false); return }
     const { data: auth } = await supabase.auth.getUser()
     if (!auth.user) { router.replace('/login'); return }

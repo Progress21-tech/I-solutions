@@ -1,232 +1,42 @@
 'use client'
-export const dynamic = 'force-dynamic'
-import { useEffect, useState, Suspense } from 'react'
+
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-const recordTypes = ['diagnosis', 'lab', 'prescription', 'imaging']
+const recordTypes = [{ value: 'diagnosis', label: 'Diagnosis' }, { value: 'lab_result', label: 'Lab result' }, { value: 'prescription', label: 'Prescription' }, { value: 'note', label: 'Clinical note' }, { value: 'imaging', label: 'Imaging' }]
 
-function UploadRecordPage() {
-  const [clinician, setClinician] = useState<any>(null)
-  const [patient, setPatient] = useState<any>(null)
-  const [recordType, setRecordType] = useState('diagnosis')
-  const [summary, setSummary] = useState('')
-  const [details, setDetails] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const patientHealthId = searchParams.get('patient_id')
+function UploadRecord() {
+  const router = useRouter(), patientHealthId = useSearchParams().get('patient_id')?.trim().toUpperCase()
+  const [patientName, setPatientName] = useState(''), [recordType, setRecordType] = useState('diagnosis'), [summary, setSummary] = useState(''), [details, setDetails] = useState(''), [file, setFile] = useState<File | null>(null), [loading, setLoading] = useState(true), [submitting, setSubmitting] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState('')
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/login')
-      return
-    }
-
-    const { data: clinicianData } = await supabase
-      .from('clinicians')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
-
-    setClinician(clinicianData)
-
-    const { data: patientData } = await supabase
-      .from('patients')
-      .select('*')
-      .eq('health_id', patientHealthId)
-      .single()
-
-    setPatient(patientData)
+  useEffect(() => { void load() }, [])
+  const load = async () => {
+    if (!patientHealthId) { setError('A patient Health ID is required.'); setLoading(false); return }
+    const { data: auth } = await supabase.auth.getUser()
+    if (!auth.user) { router.replace('/login'); return }
+    const { data, error: accessError } = await supabase.rpc('get_granted_patient_record', { p_health_id: patientHealthId })
+    if (accessError) setError(accessError.message)
+    else setPatientName((data as { patient?: { full_name?: string } })?.patient?.full_name || 'Patient')
     setLoading(false)
   }
-
-  const handleSubmit = async () => {
-    if (!summary.trim()) return
-    setSubmitting(true)
-
-    await supabase.from('records').insert({
-      patient_id: patient.id,
-      uploaded_by: clinician.id,
-      record_type: recordType,
-      content: {
-        summary,
-        details,
-        uploaded_by_name: clinician.full_name,
-        hospital: clinician.hospital_name,
-      }
-    })
-
-    // Log the action
-    await supabase.from('access_logs').insert({
-      clinician_id: clinician.id,
-      patient_id: patient.id,
-      action: 'uploaded_record'
-    })
-
-    setSuccess(true)
-    setSubmitting(false)
+  const submit = async () => {
+    if (!patientHealthId || !summary.trim()) return
+    if (recordType === 'imaging' && !file) { setError('Select a JPEG or PNG image for imaging analysis.'); return }
+    setSubmitting(true); setError(''); setMessage('')
+    const { data: session } = await supabase.auth.getSession()
+    if (!session.session) { setError('Please sign in again.'); setSubmitting(false); return }
+    const form = new FormData(); form.append('patient_health_id', patientHealthId); form.append('record_type', recordType); form.append('summary', summary.trim()); form.append('details', details.trim()); if (file) form.append('file', file)
+    try {
+      const response = await fetch('/api/records', { method: 'POST', headers: { Authorization: `Bearer ${session.session.access_token}` }, body: form })
+      const result = await response.json()
+      if (!response.ok) { setError(result.error || 'Unable to save this record.'); return }
+      setMessage(result.imagingStatus === 'complete' ? 'Record saved. AI imaging support is ready for clinician review.' : result.imagingStatus === 'failed' ? 'Record saved securely. AI imaging analysis is unavailable; please review the image clinically.' : 'Record saved securely.')
+      setSummary(''); setDetails(''); setFile(null)
+    } catch { setError('Unable to reach the secure record service. Please try again.') } finally { setSubmitting(false) }
   }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Loading...</p>
-      </div>
-    )
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white rounded-2xl p-8 text-center max-w-sm mx-auto shadow-sm">
-          <div className="text-5xl mb-4">✅</div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">
-            Record Uploaded
-          </h3>
-          <p className="text-gray-500 text-sm mb-6">
-            The record has been saved to {patient?.full_name}'s health profile
-          </p>
-          <div className="space-y-3">
-            <button
-              onClick={() => {
-                setSuccess(false)
-                setSummary('')
-                setDetails('')
-              }}
-              className="w-full border-2 border-blue-600 text-blue-600 py-3 rounded-xl font-medium hover:bg-blue-50 transition"
-            >
-              Add Another Record
-            </button>
-            <button
-              onClick={() => router.push(
-                `/clinician/access?patient_id=${patientHealthId}`
-              )}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition"
-            >
-              View Patient Records
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ←
-          </button>
-          <h1 className="text-xl font-bold text-blue-600">UPHR</h1>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
-        {/* Title */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            Add Medical Record
-          </h2>
-          <p className="text-gray-500 mt-1">
-            For: {patient?.full_name} · {patient?.health_id}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 space-y-5">
-          {/* Record Type */}
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Record Type
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {recordTypes.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setRecordType(type)}
-                  className={`py-3 rounded-xl text-sm font-medium capitalize transition border-2 ${
-                    recordType === type
-                      ? 'border-blue-600 bg-blue-50 text-blue-600'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  {type === 'diagnosis' && '🩺 '}
-                  {type === 'lab' && '🧪 '}
-                  {type === 'prescription' && '💊 '}
-                  {type === 'imaging' && '🔬 '}
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Summary */}
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Summary <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              placeholder="e.g. Patient diagnosed with Type 2 Diabetes"
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-600"
-            />
-          </div>
-
-          {/* Details */}
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Details <span className="text-gray-400">(optional)</span>
-            </label>
-            <textarea
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              placeholder="e.g. HbA1c: 8.2%, prescribed Metformin 500mg twice daily, follow up in 3 months"
-              rows={4}
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-600 resize-none"
-            />
-          </div>
-
-          {/* Clinician Info */}
-          <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-xs text-gray-400 mb-1">Uploading as</p>
-            <p className="text-sm font-medium text-gray-800">
-              {clinician?.full_name}
-            </p>
-            <p className="text-xs text-gray-500">{clinician?.hospital_name}</p>
-          </div>
-
-          {/* Submit */}
-          <button
-            onClick={handleSubmit}
-            disabled={submitting || !summary.trim()}
-            className="w-full bg-blue-600 text-white py-4 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50"
-          >
-            {submitting ? 'Saving Record...' : 'Save Record'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+  if (loading) return <main className="min-h-screen grid place-items-center bg-slate-50 text-slate-700">Checking secure record access…</main>
+  return <main className="min-h-screen bg-slate-50"><header className="border-b bg-white px-6 py-4"><button onClick={() => router.back()} className="font-semibold text-blue-800 underline">← Back</button></header><section className="mx-auto max-w-2xl p-6"><h1 className="text-2xl font-bold text-slate-950">Add medical record</h1><p className="mt-1 text-sm text-slate-700">For {patientName}. Saving a record requires active patient consent.</p>{error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</p>}{message && <p role="status" className="mt-5 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">{message}</p>}<div className="mt-6 space-y-5 rounded-2xl bg-white p-6 shadow-sm"><fieldset><legend className="text-sm font-semibold text-slate-900">Record type</legend><div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">{recordTypes.map(type => <button type="button" key={type.value} onClick={() => setRecordType(type.value)} className={`rounded-xl border-2 px-4 py-3 text-left text-sm font-semibold ${recordType === type.value ? 'border-blue-700 bg-blue-50 text-blue-900' : 'border-slate-300 text-slate-800 hover:bg-slate-50'}`}>{type.label}</button>)}</div></fieldset><label className="block text-sm font-semibold text-slate-900">Summary<input value={summary} onChange={event => setSummary(event.target.value)} maxLength={500} className="mt-2 w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-slate-950 focus:border-blue-700 focus:outline-none" placeholder="Brief clinical summary" /></label><label className="block text-sm font-semibold text-slate-900">Details <span className="font-normal text-slate-600">(optional)</span><textarea value={details} onChange={event => setDetails(event.target.value)} rows={5} className="mt-2 w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-slate-950 focus:border-blue-700 focus:outline-none" placeholder="Clinical details, observations, or follow-up" /></label><label className="block text-sm font-semibold text-slate-900">Attachment {recordType === 'imaging' && <span className="text-red-700">(required: JPEG or PNG)</span>}<input type="file" accept={recordType === 'imaging' ? 'image/jpeg,image/png' : 'application/pdf,image/jpeg,image/png'} onChange={event => setFile(event.target.files?.[0] || null)} className="mt-2 block w-full text-sm text-slate-800" /><span className="mt-1 block text-xs font-normal text-slate-600">Private upload. PDF, JPEG, or PNG only; maximum 10 MB.</span></label><button disabled={submitting || !summary.trim()} onClick={() => void submit()} className="w-full rounded-xl bg-blue-700 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-50">{submitting ? 'Saving securely…' : recordType === 'imaging' ? 'Save and analyse image' : 'Save record'}</button></div></section></main>
 }
 
-export default function Page() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>}>
-      <UploadRecordPage />
-    </Suspense>
-  )
-}
+export default function Page() { return <Suspense fallback={<main className="min-h-screen grid place-items-center">Loading…</main>}><UploadRecord /></Suspense> }

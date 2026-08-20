@@ -21,12 +21,13 @@ export default function CareMarketplace() {
   const router = useRouter(), search = useSearchParams()
   const [providers, setProviders] = useState<Provider[]>([])
   const [location, setLocation] = useState<PatientLocation>({ latitude: null, longitude: null, location_label: null })
-  const [type, setType] = useState<ProviderType | 'all'>((search.get('type') as ProviderType) || 'all')
+  const requestedType = search.get('type')
+  const [type, setType] = useState<ProviderType | 'all'>(categories.some(category => category.value === requestedType) ? requestedType as ProviderType | 'all' : 'all')
   const [specialty, setSpecialty] = useState(search.get('specialty') || '')
   const [loading, setLoading] = useState(true), [error, setError] = useState('')
 
   useEffect(() => { void load() }, [])
-  const load = async () => {
+  async function load() {
     const { data: auth } = await supabase.auth.getUser()
     if (!auth.user) { router.replace('/login'); return }
     const [{ data: patient, error: patientError }, { data: providerData, error: providerError }] = await Promise.all([

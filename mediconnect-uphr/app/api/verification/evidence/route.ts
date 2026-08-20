@@ -16,6 +16,8 @@ export async function POST(request: Request) {
     if (!(file instanceof File) || !ALLOWED_TYPES.has(file.type) || file.size > MAX_BYTES) return NextResponse.json({ error: 'Upload a PDF, JPEG, or PNG smaller than 5 MB.' }, { status: 400 })
     const { data: clinician } = await admin.from('clinicians').select('id').eq('user_id', auth.user.id).single()
     if (!clinician) return NextResponse.json({ error: 'Clinician application not found.' }, { status: 404 })
+    const { data: pendingRequest } = await admin.from('verification_requests').select('id').eq('clinician_id', clinician.id).eq('status', 'pending').maybeSingle()
+    if (!pendingRequest) return NextResponse.json({ error: 'Evidence can only be uploaded while your application is under review.' }, { status: 409 })
     const extension = file.type === 'application/pdf' ? 'pdf' : file.type === 'image/png' ? 'png' : 'jpg'
     const path = `${auth.user.id}/${crypto.randomUUID()}.${extension}`
     const { error: uploadError } = await admin.storage.from('verification-evidence').upload(path, file, { contentType: file.type, upsert: false })

@@ -12,6 +12,8 @@ export default function ClinicianPendingPage() {
   const [reviewerNote, setReviewerNote] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [uploadMessage, setUploadMessage] = useState('')
 
   useEffect(() => {
     let active = true
@@ -55,6 +57,19 @@ export default function ClinicianPendingPage() {
     router.push('/login')
   }
 
+  const uploadEvidence = async (file: File | undefined) => {
+    if (!file) return
+    setUploading(true); setUploadMessage(''); setError('')
+    const { data: session } = await supabase.auth.getSession()
+    if (!session.session) { setError('Please sign in again before uploading evidence.'); setUploading(false); return }
+    const form = new FormData(); form.append('file', file)
+    const response = await fetch('/api/verification/evidence', { method: 'POST', headers: { Authorization: `Bearer ${session.session.access_token}` }, body: form })
+    const result = await response.json()
+    if (!response.ok) setError(result.error || 'We could not upload your evidence.')
+    else setUploadMessage('Evidence uploaded securely. Our reviewers can now see it.')
+    setUploading(false)
+  }
+
   if (loading && !error) return <main className="flex min-h-screen items-center justify-center bg-slate-50"><p className="text-sm text-slate-700">Checking your verification status…</p></main>
 
   const isVerified = status === 'verified'
@@ -76,6 +91,8 @@ export default function ClinicianPendingPage() {
         {isRejected && reviewerNote && <p className="mb-6 rounded-xl bg-red-50 p-4 text-left text-sm text-red-800"><span className="font-semibold">Reviewer note: </span>{reviewerNote}</p>}
 
         {!isVerified && !isRejected && <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-left text-sm text-blue-900"><p className="mb-1 font-semibold">What happens next?</p><ul className="list-inside list-disc space-y-1"><li>We review your licence and credentials.</li><li>You will see the decision here when it is complete.</li><li>Patient-record access stays locked until approval.</li></ul></div>}
+
+        {!isVerified && <div className="mb-6 rounded-xl border border-slate-200 p-4 text-left"><p className="text-sm font-semibold text-slate-900">Supporting evidence (optional)</p><p className="mt-1 text-xs leading-5 text-slate-700">Upload a licence document or clear photo. Accepted: PDF, JPEG, or PNG, up to 5 MB. It is private and only available to authorised reviewers.</p><label className="mt-3 inline-block cursor-pointer rounded-lg border border-blue-700 px-3 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-50">{uploading ? 'Uploading…' : 'Upload evidence'}<input type="file" accept="application/pdf,image/jpeg,image/png" className="sr-only" disabled={uploading} onChange={(event) => void uploadEvidence(event.target.files?.[0])} /></label>{uploadMessage && <p role="status" className="mt-2 text-sm text-emerald-800">{uploadMessage}</p>}</div>}
 
         {isVerified ? (
           <button type="button" onClick={() => router.push('/clinician/dashboard')} className="w-full rounded-xl bg-emerald-700 py-3 font-semibold text-white hover:bg-emerald-800">Open clinician dashboard</button>

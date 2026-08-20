@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     if (recordError) throw recordError
     await admin.from('access_logs').insert({ patient_id: patient.id, clinician_id: clinician.id, action: 'uploaded_record', access_grant_id: grant.id, metadata: { record_id: record.id, record_type: recordType } })
     let imagingStatus: 'not_requested' | 'complete' | 'failed' | 'pending' = 'not_requested'
+    let imagingOutput: { analysis: string; disclaimer: string } | null = null
     if (recordType === 'imaging' && attachmentPath && file instanceof File) {
       const { data: imaging, error: imagingError } = await admin.from('imaging_analyses').insert({ patient_id: patient.id, clinician_id: clinician.id, file_path: attachmentPath, status: 'pending' }).select('id').single()
       if (imagingError) throw imagingError
@@ -47,12 +48,13 @@ export async function POST(request: Request) {
         const { error: analysisError } = await admin.from('imaging_analyses').update({ status: 'complete', ai_output: output }).eq('id', imaging.id)
         if (analysisError) throw analysisError
         imagingStatus = 'complete'
+        imagingOutput = output
       } catch (analysisError) {
         await admin.from('imaging_analyses').update({ status: 'failed', ai_output: { error: analysisError instanceof Error ? analysisError.message : 'Analysis unavailable', disclaimer: 'The image was stored securely, but AI analysis could not be completed. Please review it clinically.' } }).eq('id', imaging.id)
         imagingStatus = 'failed'
       }
     }
-    return NextResponse.json({ recordId: record.id, imagingStatus })
+    return NextResponse.json({ recordId: record.id, imagingStatus, imagingOutput })
   } catch (error) {
     console.error('Record upload failed:', error)
     return NextResponse.json({ error: 'We could not securely save this record. Please try again.' }, { status: 500 })

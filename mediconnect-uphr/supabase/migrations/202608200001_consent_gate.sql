@@ -12,6 +12,10 @@ create policy "patients_read_own_access_requests" on public.access_requests for 
 create policy "clinicians_read_own_access_requests" on public.access_requests for select using (clinician_id in (select id from public.clinicians where user_id = auth.uid()));
 create policy "patients_read_own_access_grants" on public.access_grants for select using (patient_id in (select id from public.patients where user_id = auth.uid()));
 create policy "clinicians_read_own_access_grants" on public.access_grants for select using (clinician_id in (select id from public.clinicians where user_id = auth.uid()));
+create policy "patients_read_connected_clinicians" on public.clinicians for select using (
+  id in (select clinician_id from public.access_requests where patient_id in (select id from public.patients where user_id = auth.uid()))
+  or id in (select clinician_id from public.access_grants where patient_id in (select id from public.patients where user_id = auth.uid()))
+);
 drop policy if exists "clinicians_read_granted_records" on public.records;
 
 create or replace function public.request_record_access(p_health_id text, p_purpose text default 'record_access') returns table(request_id uuid, status text) language plpgsql security definer set search_path = public as $$

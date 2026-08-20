@@ -33,10 +33,27 @@ interface AccessLog {
   clinicians: Clinician | null
 }
 
+interface AccessRequest {
+  id: string
+  purpose: string
+  created_at: string
+  clinicians: Clinician | null
+}
+
+interface AccessGrant {
+  id: string
+  expires_at: string
+  clinicians: Clinician | null
+}
+
 export default function PatientDashboard() {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [records, setRecords] = useState<Record[]>([])
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>([])
+  const [accessRequests, setAccessRequests] = useState<AccessRequest[]>([])
+  const [accessGrants, setAccessGrants] = useState<AccessGrant[]>([])
+  const [consentMessage, setConsentMessage] = useState('')
+  const [consentError, setConsentError] = useState('')
   const [loading, setLoading] = useState(true)
 
   const router = useRouter()
@@ -93,6 +110,23 @@ export default function PatientDashboard() {
       }))
 
       setAccessLogs(formattedLogs)
+
+      const { data: requestsData } = await supabase
+        .from('access_requests')
+        .select('id, purpose, created_at, clinicians(full_name, hospital_name)')
+        .eq('patient_id', patientData.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+      setAccessRequests((requestsData || []).map((request: any) => ({ ...request, clinicians: request.clinicians?.[0] || request.clinicians || null })))
+
+      const { data: grantsData } = await supabase
+        .from('access_grants')
+        .select('id, expires_at, clinicians(full_name, hospital_name)')
+        .eq('patient_id', patientData.id)
+        .eq('status', 'active')
+        .gt('expires_at', new Date().toISOString())
+        .order('expires_at', { ascending: true })
+      setAccessGrants((grantsData || []).map((grant: any) => ({ ...grant, clinicians: grant.clinicians?.[0] || grant.clinicians || null })))
     } catch (error) {
       console.error('Error fetching patient data:', error)
     } finally {
@@ -103,6 +137,24 @@ export default function PatientDashboard() {
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  const respondToRequest = async (requestId: string, approve: boolean) => {
+    setConsentError(''); setConsentMessage('')
+    const { error } = await supabase.rpc('respond_to_record_access_request', {
+      p_request_id: requestId, p_approve: approve, p_duration_hours: 24,
+    })
+    if (error) { setConsentError(error.message); return }
+    setConsentMessage(approve ? 'Access granted for 24 hours.' : 'Access request denied.')
+    fetchPatientData()
+  }
+
+  const revokeGrant = async (grantId: string) => {
+    setConsentError(''); setConsentMessage('')
+    const { error } = await supabase.rpc('revoke_record_access', { p_grant_id: grantId })
+    if (error) { setConsentError(error.message); return }
+    setConsentMessage('Access has been revoked.')
+    fetchPatientData()
   }
 
   if (loading) {
@@ -218,6 +270,23 @@ export default function PatientDashboard() {
         </div>
 
         {/* Access Log */}
+        <div className="bg-white rounded-2xl p-6">
+          <h3 className="font-semibold text-gray-800 mb-2">Record access permissions</h3>
+          <p className="text-sm text-gray-600 mb-4">Approve a verified clinician for 24 hours, or revoke access at any time.</p>
+          {consentMessage && <p className="mb-3 text-sm text-green-700" role="status">{consentMessage}</p>}
+          {consentError && <p className="mb-3 text-sm text-red-700" role="alert">{consentError}</p>}
+          {accessRequests.length > 0 && <div className="space-y-3 mb-5">
+            <p className="text-sm font-semibold text-gray-800">Awaiting your decision</p>
+            {accessRequests.map(request => <div key={request.id} className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <p className="text-sm font-semibold text-gray-900">Dr. {request.clinicians?.full_name || 'Verified clinician'}</p>
+              <p className="text-xs text-gray-700">{request.clinicians?.hospital_name || 'Hospital not supplied'} · Requested {new Date(request.created_at).toLocaleString()}</p>
+              <div className="mt-3 flex gap-3"><button onClick={() => respondToRequest(request.id, true)} className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800">Allow for 24 hours</button><button onClick={() => respondToRequest(request.id, false)} className="rounded-lg border border-gray-400 px-3 py-2 text-sm font-semibold text-gray-800 hover:bg-white">Deny</button></div>
+            </div>)}
+          </div>}
+          {accessGrants.length > 0 && <div className="space-y-3"><p className="text-sm font-semibold text-gray-800">Active access</p>{accessGrants.map(grant => <div key={grant.id} className="flex items-center justify-between rounded-xl border border-gray-200 p-4"><div><p className="text-sm font-semibold text-gray-900">Dr. {grant.clinicians?.full_name || 'Clinician'}</p><p className="text-xs text-gray-700">Expires {new Date(grant.expires_at).toLocaleString()}</p></div><button onClick={() => revokeGrant(grant.id)} className="text-sm font-semibold text-red-700 underline">Revoke</button></div>)}</div>}
+          {!accessRequests.length && !accessGrants.length && <p className="text-sm text-gray-600">There are no pending or active access permissions.</p>}
+        </div>
+
         <div className="bg-white rounded-2xl p-6">
           <h3 className="font-semibold text-gray-800 mb-4">
             Who Viewed Your Records

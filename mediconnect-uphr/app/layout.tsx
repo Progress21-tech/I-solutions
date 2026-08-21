@@ -1,26 +1,24 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next'
+import './globals.css'
 import { LanguageProvider } from '@/components/LanguageProvider'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export const metadata: Metadata = {
-  title: "UPHR - Unified Patient Health Record",
-  description: "Your health record, anywhere in the world",
-};
+  title: 'Materna AI — Continuity of Care for Maternal & Chronic Patients',
+  description: 'An AI-Powered Continuity-of-Care Platform closing the loop between hospital visits and daily life for mothers and chronic disease patients in Nigeria.',
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en-NG">
-      <body>
+      <body className="bg-slate-950 text-slate-100 antialiased font-sans">
         <LanguageProvider>
-          <div className="fixed right-4 top-4 z-50"><LanguageSwitcher /></div>
           {children}
         </LanguageProvider>
       </body>
     </html>
-  );
+  )
 }

@@ -75,7 +75,7 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
     const userText = (overrideText || input).trim()
     if (!userText || loading) return
 
-    // 1. Safety Check: Emergency Red-Flag Interceptor
+    // 1. Pre-Model Safety Check: Emergency Red-Flag Interceptor
     const safety = checkRedFlagSafety(userText)
     if (safety.isEmergency) {
       setEmergencyModal({
@@ -175,26 +175,26 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans pb-20">
       {/* Top Header */}
-      <header className="bg-slate-900 border-b border-slate-800 px-5 py-3.5 flex items-center justify-between sticky top-0 z-30">
+      <header className="bg-white border-b border-slate-200 px-5 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-xs">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-slate-400 hover:text-white font-bold text-sm">
+          <button onClick={() => router.back()} className="text-slate-500 hover:text-slate-900 font-bold text-sm">
             ←
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-bold text-white text-sm">Materna AI Copilot</h1>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <h1 className="font-bold text-slate-900 text-sm">Materna AI Copilot</h1>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
-            <p className="text-[11px] text-emerald-400">Grounded in Dr. Bello's Clinical Records</p>
+            <p className="text-[11px] text-emerald-700 font-medium">Grounded in Dr. Bello's Clinical Records</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowDoctorModal(true)}
-            className="bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-700 text-xs font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1 shadow"
+            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1 shadow-xs"
           >
             <span>👩‍⚕️</span> Talk to Doctor
           </button>
@@ -203,29 +203,29 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
       </header>
 
       {/* Suggested Query Pills */}
-      <div className="bg-slate-900/60 border-b border-slate-800/80 px-4 py-2.5 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap">
-        <span className="text-slate-500 text-[11px] font-semibold shrink-0">Suggestions:</span>
+      <div className="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap">
+        <span className="text-slate-400 text-[11px] font-semibold shrink-0">Suggestions:</span>
         <button
           onClick={() => sendMessage('Is my blood pressure of 148/96 safe for 32 weeks?')}
-          className="bg-slate-800 hover:bg-slate-750 text-slate-300 px-3 py-1 rounded-full border border-slate-700 text-[11px]"
+          className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-full border border-slate-200 text-[11px]"
         >
           🫀 Is my BP of 148/96 safe?
         </button>
         <button
           onClick={() => sendMessage('How often should I feel baby kicks at 32 weeks?')}
-          className="bg-slate-800 hover:bg-slate-750 text-slate-300 px-3 py-1 rounded-full border border-slate-700 text-[11px]"
+          className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-full border border-slate-200 text-[11px]"
         >
           🦶 How many baby kicks?
         </button>
         <button
           onClick={() => sendMessage('How do I order my Methyldopa refill for delivery?')}
-          className="bg-slate-800 hover:bg-slate-750 text-slate-300 px-3 py-1 rounded-full border border-slate-700 text-[11px]"
+          className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-full border border-slate-200 text-[11px]"
         >
           💊 Order Methyldopa Refill
         </button>
         <button
           onClick={() => sendMessage('I have severe headache with blurry vision and bleeding')}
-          className="bg-rose-950/80 text-rose-300 border border-rose-700 px-3 py-1 rounded-full text-[11px] font-bold"
+          className="bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 px-3 py-1 rounded-full text-[11px] font-bold"
         >
           🚨 Test Red-Flag Alert
         </button>
@@ -238,23 +238,23 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
             <div
               className={`max-w-[85%] px-4 py-3 rounded-2xl text-xs leading-relaxed space-y-2 ${
                 msg.role === 'user'
-                  ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-br-none shadow-md'
-                  : 'bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-none shadow-sm'
+                  ? 'bg-rose-600 text-white rounded-br-none shadow-xs'
+                  : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs'
               }`}
             >
               <div className="whitespace-pre-wrap">{msg.content}</div>
 
               {msg.role === 'assistant' && (
-                <div className="pt-2 border-t border-slate-800 flex items-center gap-2 text-[11px]">
+                <div className="pt-2 border-t border-slate-100 flex items-center gap-2 text-[11px]">
                   <button
                     onClick={() => speak(msg.content)}
-                    className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
+                    className="text-emerald-700 hover:text-emerald-800 font-semibold flex items-center gap-1"
                   >
                     <span>🔊</span> Read Aloud
                   </button>
                   <button
                     onClick={() => window.speechSynthesis?.cancel()}
-                    className="text-slate-500 hover:text-slate-400"
+                    className="text-slate-400 hover:text-slate-600"
                   >
                     Stop
                   </button>
@@ -266,8 +266,8 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
 
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-slate-900 border border-slate-800 px-4 py-3 rounded-2xl text-xs text-slate-400 animate-pulse flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <div className="bg-white border border-slate-200 px-4 py-3 rounded-2xl text-xs text-slate-500 shadow-xs flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               Materna AI is reviewing your records...
             </div>
           </div>
@@ -276,12 +276,12 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
       </main>
 
       {/* Clinical Decision Support Disclaimer */}
-      <aside className="bg-slate-900/90 border-t border-slate-800 px-4 py-1.5 text-center text-[10px] text-slate-400 max-w-xl mx-auto w-full">
+      <aside className="bg-white border-t border-slate-200 px-4 py-1.5 text-center text-[10px] text-slate-500 max-w-xl mx-auto w-full">
         🔒 Clinical Decision Support: Materna AI provides grounded guidance and does not replace your doctor's orders.
       </aside>
 
       {/* Input Area */}
-      <footer className="bg-slate-900 border-t border-slate-800 px-4 py-3 max-w-xl mx-auto w-full flex items-center gap-2">
+      <footer className="bg-white border-t border-slate-200 px-4 py-3 max-w-xl mx-auto w-full flex items-center gap-2 shadow-xs">
         <input
           type="text"
           value={input}
@@ -289,7 +289,7 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
           placeholder="Ask a question about your pregnancy, blood pressure, or baby..."
           disabled={loading}
-          className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500"
+          className="flex-1 bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-rose-500"
         />
 
         <button
@@ -298,7 +298,7 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
           className={`p-2.5 rounded-xl border font-bold text-sm transition ${
             isListening
               ? 'bg-rose-600 text-white border-rose-500 animate-pulse'
-              : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+              : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
           }`}
           title="Voice input in English, Pidgin, Yoruba, Hausa, Igbo"
         >
@@ -308,7 +308,7 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
         <button
           onClick={() => sendMessage()}
           disabled={loading || !input.trim()}
-          className="bg-pink-600 hover:bg-pink-500 disabled:opacity-40 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-md shadow-pink-950"
+          className="bg-rose-600 hover:bg-rose-700 disabled:opacity-40 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-xs"
         >
           Send
         </button>
@@ -316,45 +316,45 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
 
       {/* Emergency Red-Flag Interceptor Modal */}
       {emergencyModal.show && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-gradient-to-b from-rose-950 via-slate-900 to-slate-900 border-2 border-rose-500 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl text-xs">
-            <div className="flex items-center justify-between border-b border-rose-800/80 pb-3">
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border-2 border-rose-500 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl text-xs">
+            <div className="flex items-center justify-between border-b border-rose-100 pb-3">
               <div className="flex items-center gap-2">
-                <span className="text-2xl animate-bounce">🚨</span>
+                <span className="text-2xl">🚨</span>
                 <div>
-                  <h3 className="text-base font-black text-rose-200">EMERGENCY TRIAGE ALERT</h3>
-                  <p className="text-[11px] text-rose-300">Potential Life-Threatening Obstetric Flag</p>
+                  <h3 className="text-base font-black text-rose-900">EMERGENCY TRIAGE ALERT</h3>
+                  <p className="text-[11px] text-rose-700">Potential Life-Threatening Obstetric Flag</p>
                 </div>
               </div>
               <button
                 onClick={() => setEmergencyModal({ show: false, reason: '' })}
-                className="text-slate-400 hover:text-white text-base"
+                className="text-slate-400 hover:text-slate-600 text-base"
               >
                 ✕
               </button>
             </div>
 
-            <div className="bg-rose-950/80 border border-rose-700 p-3.5 rounded-2xl text-rose-100 space-y-1.5">
+            <div className="bg-rose-50 border border-rose-200 p-3.5 rounded-2xl text-rose-900 space-y-1.5">
               <p className="font-bold">Symptoms Identified: {emergencyModal.reason}</p>
-              <p className="text-[11px] leading-relaxed text-rose-200">
+              <p className="text-[11px] leading-relaxed text-rose-800">
                 Please do not wait. Lie on your left side and have someone drive you to the nearest hospital labor unit immediately.
               </p>
             </div>
 
             {/* Direct 1-Tap Emergency Hotlines */}
             <div className="space-y-2">
-              <span className="font-bold text-white block text-[11px] uppercase tracking-wider">
+              <span className="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">
                 1-Tap Emergency Dispatch Lines:
               </span>
               <a
                 href="tel:112"
-                className="w-full bg-rose-600 hover:bg-rose-500 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 text-sm shadow-xl transition"
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 text-sm shadow-md transition"
               >
                 <span>📞</span> Call 112 / 767 (Toll-Free Emergency)
               </a>
               <a
                 href="tel:+2348029990011"
-                className="w-full bg-slate-800 hover:bg-slate-700 text-rose-200 border border-rose-700 font-bold py-2.5 rounded-2xl flex items-center justify-center gap-2 text-xs transition"
+                className="w-full bg-slate-100 hover:bg-slate-200 text-rose-900 border border-rose-300 font-bold py-2.5 rounded-2xl flex items-center justify-center gap-2 text-xs transition"
               >
                 <span>🏥</span> Call Lagos Island Maternity Triage
               </a>
@@ -363,7 +363,7 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
             <div className="text-center pt-2">
               <button
                 onClick={() => setEmergencyModal({ show: false, reason: '' })}
-                className="text-slate-400 hover:text-slate-200 text-xs font-semibold underline"
+                className="text-slate-500 hover:text-slate-800 text-xs font-semibold underline"
               >
                 I am already at the clinic / Dismiss
               </button>
@@ -374,37 +374,37 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
 
       {/* Talk to Doctor Modal */}
       {showDoctorModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl text-xs">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white">Contact Your Clinical Care Team</h3>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl text-xs">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900">Contact Your Clinical Care Team</h3>
               <button onClick={() => setShowDoctorModal(false)} className="text-slate-400 text-base">
                 ✕
               </button>
             </div>
 
             <div className="space-y-3">
-              <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex items-center justify-between">
+              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-white text-sm">Dr. Bello Adeyemi</p>
-                  <p className="text-slate-400 text-[11px]">Chief Medical Officer · Lagos Island Maternity</p>
+                  <p className="font-bold text-slate-900 text-sm">Dr. Bello Adeyemi</p>
+                  <p className="text-slate-500 text-[11px]">Chief Medical Officer · Lagos Island Maternity</p>
                 </div>
                 <a
                   href="tel:+2348035550192"
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs"
                 >
                   📞 Call
                 </a>
               </div>
 
-              <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex items-center justify-between">
+              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-white text-sm">Nurse Ifeoma Eze</p>
-                  <p className="text-slate-400 text-[11px]">Senior Antenatal Triage Nurse</p>
+                  <p className="font-bold text-slate-900 text-sm">Nurse Ifeoma Eze</p>
+                  <p className="text-slate-500 text-[11px]">Senior Antenatal Triage Nurse</p>
                 </div>
                 <a
                   href="tel:+2348035550192"
-                  className="bg-teal-600 hover:bg-teal-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs"
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs"
                 >
                   💬 WhatsApp
                 </a>
@@ -414,7 +414,7 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setShowDoctorModal(false)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-xl text-xs"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs"
               >
                 Close
               </button>
@@ -424,20 +424,20 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
       )}
 
       {/* Floating Bottom Nav */}
-      <nav className="fixed bottom-0 inset-x-0 bg-slate-900/95 border-t border-slate-800 backdrop-blur px-6 py-2.5 flex items-center justify-around z-40 max-w-xl mx-auto">
-        <Link href="/patient/dashboard" className="text-center text-slate-400 hover:text-slate-200 flex flex-col items-center gap-0.5">
+      <nav className="fixed bottom-0 inset-x-0 bg-white/95 border-t border-slate-200 backdrop-blur px-6 py-2.5 flex items-center justify-around z-40 max-w-xl mx-auto shadow-md">
+        <Link href="/patient/dashboard" className="text-center text-slate-500 hover:text-slate-800 flex flex-col items-center gap-0.5">
           <span className="text-base">🏠</span>
           <span className="text-[10px] font-bold">Home</span>
         </Link>
-        <Link href="/patient/medications" className="text-center text-slate-400 hover:text-slate-200 flex flex-col items-center gap-0.5">
+        <Link href="/patient/medications" className="text-center text-slate-500 hover:text-slate-800 flex flex-col items-center gap-0.5">
           <span className="text-base">💊</span>
           <span className="text-[10px] font-bold">Meds & Refills</span>
         </Link>
-        <Link href="/patient/chat" className="text-center text-pink-400 flex flex-col items-center gap-0.5">
+        <Link href="/patient/chat" className="text-center text-rose-600 flex flex-col items-center gap-0.5">
           <span className="text-base">🤖</span>
           <span className="text-[10px] font-bold">AI Copilot</span>
         </Link>
-        <Link href="/patient/log" className="text-center text-slate-400 hover:text-slate-200 flex flex-col items-center gap-0.5">
+        <Link href="/patient/log" className="text-center text-slate-500 hover:text-slate-800 flex flex-col items-center gap-0.5">
           <span className="text-base">📊</span>
           <span className="text-[10px] font-bold">Log Vitals</span>
         </Link>

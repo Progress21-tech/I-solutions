@@ -138,7 +138,7 @@ export default function LoginPage() {
           <button
             onClick={handleEmailAuth}
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full bg-emerald-600 text-white py-3 rounded-xl font-medium hover:bg-emerald-700 transition disabled:opacity-50"
           >
             {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
           </button>
@@ -148,7 +148,7 @@ export default function LoginPage() {
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-blue-600 font-medium"
+            className="text-emerald-700 font-medium"
           >
             {isSignUp ? 'Sign In' : 'Sign Up'}
           </button>

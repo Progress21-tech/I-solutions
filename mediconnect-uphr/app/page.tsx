@@ -1,177 +1,355 @@
 'use client'
+
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function LandingPage() {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navbar */}
-      <div className="px-6 py-4 flex items-center justify-between border-b">
-        <h1 className="text-2xl font-bold text-blue-600">UPHR</h1>
-        <button
-          onClick={() => router.push('/login')}
-          className="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
-        >
-          Get Started
-        </button>
-      </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-slate-950">
+      {/* Top Navigation */}
+      <header className="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
+            M
+          </div>
+          <div>
+            <span className="font-extrabold text-xl text-white tracking-tight">Materna AI</span>
+            <span className="text-[10px] ml-2 font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              Continuity-of-Care Platform
+            </span>
+          </div>
+        </div>
 
-      {/* Hero */}
-      <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <span className="bg-blue-50 text-blue-600 text-sm font-medium px-4 py-2 rounded-full">
-          Unified Patient Health Record
-        </span>
-        <h2 className="text-5xl font-bold text-gray-900 mt-6 leading-tight">
-          Your health record,
-          <span className="text-blue-600"> anywhere in the world</span>
-        </h2>
-        <p className="text-gray-500 text-lg mt-6 max-w-2xl mx-auto">
-          One secure digital health identity that travels with you. 
-          Any doctor, any hospital, any city — your complete medical 
-          history is always accessible.
+        <div className="flex items-center gap-3">
+          <Link
+            href="/clinician/dashboard"
+            className="text-xs font-bold text-slate-300 hover:text-white px-3 py-2 rounded-xl transition hidden sm:inline"
+          >
+            Hospital Portal
+          </Link>
+          <Link
+            href="/patient/dashboard"
+            className="text-xs font-bold text-slate-300 hover:text-white px-3 py-2 rounded-xl transition hidden sm:inline"
+          >
+            Patient App
+          </Link>
+          <Link
+            href="/offline-channels"
+            className="text-xs font-bold bg-teal-950 text-teal-300 border border-teal-800/50 hover:bg-teal-900 px-3 py-1.5 rounded-xl transition hidden md:inline"
+          >
+            📱 WhatsApp & USSD
+          </Link>
+          <Link
+            href="/clinician/dashboard"
+            className="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs px-4 py-2 rounded-xl transition shadow-lg shadow-emerald-950"
+          >
+            Open Live Demo 🚀
+          </Link>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-16 pb-24 px-6 max-w-6xl mx-auto text-center space-y-8">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs text-emerald-400 font-semibold shadow-inner">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          Prepared for National Competition Demo · August 2026
+        </div>
+
+        <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight max-w-4xl mx-auto leading-[1.15]">
+          Closing the loop between{' '}
+          <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+            clinical care
+          </span>{' '}
+          and daily patient life in Nigeria.
+        </h1>
+
+        <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+          Materna AI unites hospital visits, explainable risk prediction, plain-language patient companion, and doorstep medication delivery for pregnant mothers and chronic disease patients.
         </p>
-        <div className="flex items-center justify-center gap-4 mt-10">
-          <button
-            onClick={() => router.push('/login')}
-            className="bg-blue-600 text-white px-8 py-4 rounded-xl font-medium hover:bg-blue-700 transition text-lg"
-          >
-            Create Your Health ID
-          </button>
-          <button
-            onClick={() => router.push('/login')}
-            className="border-2 border-gray-200 text-gray-700 px-8 py-4 rounded-xl font-medium hover:border-gray-300 transition text-lg"
-          >
-            I am a Clinician
-          </button>
-        </div>
-      </div>
 
-      {/* Problem Section */}
-      <div className="bg-gray-50 py-20">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h3 className="text-3xl font-bold text-gray-900 mb-4">
-            The problem we are solving
-          </h3>
-          <p className="text-gray-500 max-w-2xl mx-auto mb-12">
-            In Nigeria and across Africa, patient records are fragmented, 
-            paper-based, and trapped in individual hospitals. This costs lives.
+        {/* Primary Call to Action buttons */}
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+          <Link
+            href="/clinician/dashboard"
+            className="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black px-6 py-3.5 rounded-2xl text-sm transition shadow-xl shadow-emerald-950 flex items-center gap-2"
+          >
+            <span>👩‍⚕️</span> Provider & Hospital Portal
+          </Link>
+          <Link
+            href="/patient/dashboard"
+            className="bg-pink-600 hover:bg-pink-500 text-white font-black px-6 py-3.5 rounded-2xl text-sm transition shadow-xl shadow-pink-950 flex items-center gap-2"
+          >
+            <span>🤰</span> Patient App (Amaka 32w)
+          </Link>
+          <Link
+            href="/offline-channels"
+            className="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-bold px-5 py-3.5 rounded-2xl text-sm transition flex items-center gap-2"
+          >
+            <span>📟</span> WhatsApp & USSD Mode
+          </Link>
+        </div>
+      </section>
+
+      {/* Interactive Demo Surfaces Switchboard */}
+      <section className="max-w-6xl mx-auto px-6 py-12 border-t border-slate-800/80">
+        <div className="text-center space-y-2 mb-10">
+          <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-400">
+            COMPREHENSIVE END-TO-END DEMO SUITE
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-black text-white">
+            Explore All 7 Surfaces of Materna AI
+          </h2>
+          <p className="text-xs text-slate-400 max-w-xl mx-auto">
+            Click into any role below to experience the complete closed data loop in action.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl p-6 text-left">
-              <div className="text-3xl mb-4">📋</div>
-              <h4 className="font-semibold text-gray-800 mb-2">
-                Fragmented Records
-              </h4>
-              <p className="text-gray-500 text-sm">
-                Your medical history is scattered across every hospital 
-                you have ever visited with no way to connect them.
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Card 1: Provider Dashboard */}
+          <Link
+            href="/clinician/dashboard"
+            className="group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/80 rounded-3xl p-6 transition space-y-3 shadow-xl relative overflow-hidden"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
+              🏥
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Hospital Surface</span>
+              <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition mt-0.5">
+                Provider & Triage Dashboard
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Green/Amber/Red patient panel with explainable driving factors, active Red-tier SLA countdown timer, and 1-tap intake.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 text-left">
-              <div className="text-3xl mb-4">🔄</div>
-              <h4 className="font-semibold text-gray-800 mb-2">
-                Repeated Tests
-              </h4>
-              <p className="text-gray-500 text-sm">
-                Doctors repeat expensive tests because they cannot access 
-                results from your previous hospital visits.
+            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1 pt-2">
+              Launch Portal →
+            </span>
+          </Link>
+
+          {/* Card 2: Structured Visit Entry */}
+          <Link
+            href="/clinician/visit?patient_id=MAT-AMK-2026"
+            className="group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/80 rounded-3xl p-6 transition space-y-3 shadow-xl"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center text-xl">
+              📝
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400">Clinical Data Ingestion</span>
+              <h3 className="text-lg font-bold text-white group-hover:text-teal-400 transition mt-0.5">
+                Structured Visit Entry
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Faster than paper vitals entry, maternal fundal/fetal checks, urinalysis dipstick, and instantaneous live AI risk preview.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 text-left">
-              <div className="text-3xl mb-4">⚠️</div>
-              <h4 className="font-semibold text-gray-800 mb-2">
-                Dangerous Gaps
-              </h4>
-              <p className="text-gray-500 text-sm">
-                Critical information like allergies and chronic conditions 
-                is unknown to new doctors, putting patients at risk.
+            <span className="text-xs font-bold text-teal-400 flex items-center gap-1 pt-2">
+              Test Live Visit Entry →
+            </span>
+          </Link>
+
+          {/* Card 3: Patient App */}
+          <Link
+            href="/patient/dashboard"
+            className="group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-pink-500/80 rounded-3xl p-6 transition space-y-3 shadow-xl"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-xl">
+              🤰
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-pink-400">Patient Surface</span>
+              <h3 className="text-lg font-bold text-white group-hover:text-pink-400 transition mt-0.5">
+                Maternal Companion (Amaka, 32w)
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Plain-language health status (no medical jargon), 32-week pregnancy journey, baby milestones, and caregiver permissions.
               </p>
+            </div>
+            <span className="text-xs font-bold text-pink-400 flex items-center gap-1 pt-2">
+              Open Patient App →
+            </span>
+          </Link>
+
+          {/* Card 4: AI Copilot & Safety Interceptor */}
+          <Link
+            href="/patient/chat"
+            className="group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/80 rounded-3xl p-6 transition space-y-3 shadow-xl"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl">
+              🤖
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">AI Intelligence</span>
+              <h3 className="text-lg font-bold text-white group-hover:text-purple-400 transition mt-0.5">
+                RAG Copilot & Red-Flag Triage
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Grounded in patient's actual hospital record. Multilingual (Pidgin/Yoruba/Hausa/Igbo) with instant emergency alert interception.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-purple-400 flex items-center gap-1 pt-2">
+              Chat with Copilot →
+            </span>
+          </Link>
+
+          {/* Card 5: Prescription & Delivery */}
+          <Link
+            href="/patient/medications"
+            className="group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-blue-500/80 rounded-3xl p-6 transition space-y-3 shadow-xl"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl">
+              💊
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Fulfillment Loop</span>
+              <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition mt-0.5">
+                Medication Delivery Tracker
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Prescription-linked ordering with Medplus/HealthPlus. Live status from pharmacy dispense to GOKADA medical dispatch rider.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-blue-400 flex items-center gap-1 pt-2">
+              View Delivery Tracker →
+            </span>
+          </Link>
+
+          {/* Card 6: CHW Portal */}
+          <Link
+            href="/chw"
+            className="group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-teal-500/80 rounded-3xl p-6 transition space-y-3 shadow-xl"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center text-xl">
+              🏡
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400">Community Outreach</span>
+              <h3 className="text-lg font-bold text-white group-hover:text-teal-400 transition mt-0.5">
+                CHW Home Visit Portal
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Lightweight, offline-enabled interface for field community health workers to record home BP readings and escalate to nurses.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-teal-400 flex items-center gap-1 pt-2">
+              Open CHW Portal →
+            </span>
+          </Link>
+
+          {/* Card 7: Low Connectivity Hub */}
+          <Link
+            href="/offline-channels"
+            className="group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/80 rounded-3xl p-6 transition space-y-3 shadow-xl"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl">
+              📱
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Low-Connectivity Channels</span>
+              <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition mt-0.5">
+                WhatsApp Bot & USSD (*384*628#)
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Interactive simulator demonstrating access on feature phones and WhatsApp without requiring constant high-speed data.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-amber-400 flex items-center gap-1 pt-2">
+              Try WhatsApp / USSD →
+            </span>
+          </Link>
+
+          {/* Card 8: Specialist Referrals & FHIR */}
+          <Link
+            href="/clinician/referrals"
+            className="group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/80 rounded-3xl p-6 transition space-y-3 shadow-xl"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl">
+              🏥
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Interoperability</span>
+              <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition mt-0.5">
+                Specialist Referral & FHIR Export
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Pre-triaged patient packages to LUTH / National Hospital with standard HL7 FHIR R4 Bundle exports for Helium Health EMRs.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-cyan-400 flex items-center gap-1 pt-2">
+              Review Referrals & FHIR →
+            </span>
+          </Link>
+
+          {/* Card 9: Self-Monitoring Log */}
+          <Link
+            href="/patient/log"
+            className="group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/80 rounded-3xl p-6 transition space-y-3 shadow-xl"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
+              📊
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Continuous Monitoring</span>
+              <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition mt-0.5">
+                Patient Vitals & Symptom Self-Log
+              </h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Home Omron BP cuff entry, blood glucose, fetal kick counter, and instant AI feedback on health trends.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1 pt-2">
+              Log Home Reading →
+            </span>
+          </Link>
+        </div>
+      </section>
+
+      {/* The Core Differentiating Insight: Closed Loop */}
+      <section className="max-w-5xl mx-auto px-6 py-16 border-t border-slate-800/80">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-850 border border-slate-800 rounded-3xl p-8 space-y-6 shadow-2xl">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
+            WHY MATERNA AI WINS
+          </span>
+          <h2 className="text-2xl sm:text-4xl font-black text-white">
+            Closed-Loop Data, Not a Disconnected Point Solution
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            In Nigeria today, patient education apps, EMR hospital systems, and pharmacy delivery apps exist as disconnected silos. Materna AI is the <strong>connective tissue</strong>: the exact vitals a nurse records at Lagos Maternity becomes the data the AI risk model reasons over, the data that alerts Dr. Bello, and the data that triggers a doorstep medication refill.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs pt-4">
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-1">
+              <span className="font-bold text-emerald-400 block">1. Structured Visit</span>
+              <p className="text-slate-400 text-[11px]">Nurse enters BP & urinalysis in structured form faster than paper.</p>
+            </div>
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-1">
+              <span className="font-bold text-amber-400 block">2. Explainable AI</span>
+              <p className="text-slate-400 text-[11px]">Risk model flags Pre-eclampsia with specific driving factors.</p>
+            </div>
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-1">
+              <span className="font-bold text-pink-400 block">3. Patient App</span>
+              <p className="text-slate-400 text-[11px]">Translates clinical findings into reassuring, plain-language guidance.</p>
+            </div>
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-1">
+              <span className="font-bold text-blue-400 block">4. Direct Refill</span>
+              <p className="text-slate-400 text-[11px]">Partner pharmacy dispenses and delivers prescribed Methyldopa.</p>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Solution Section */}
-      <div className="py-20">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h3 className="text-3xl font-bold text-gray-900 mb-4">
-            How UPHR works
-          </h3>
-          <p className="text-gray-500 max-w-2xl mx-auto mb-12">
-            A simple, secure system that puts patients in control 
-            of their own health records.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-            <div className="border-2 border-blue-100 rounded-2xl p-6">
-              <div className="text-3xl mb-4">🆔</div>
-              <h4 className="font-semibold text-gray-800 mb-2">
-                One Health ID
-              </h4>
-              <p className="text-gray-500 text-sm">
-                Every patient gets a unique health ID and QR code. 
-                Show it at any hospital worldwide to share your records instantly.
-              </p>
-            </div>
-            <div className="border-2 border-blue-100 rounded-2xl p-6">
-              <div className="text-3xl mb-4">☁️</div>
-              <h4 className="font-semibold text-gray-800 mb-2">
-                Cloud Stored
-              </h4>
-              <p className="text-gray-500 text-sm">
-                Your records are securely stored in the cloud — 
-                accessible from Lagos, Abuja, London or anywhere in the world.
-              </p>
-            </div>
-            <div className="border-2 border-blue-100 rounded-2xl p-6">
-              <div className="text-3xl mb-4">🤖</div>
-              <h4 className="font-semibold text-gray-800 mb-2">
-                AI Health Assistant
-              </h4>
-              <p className="text-gray-500 text-sm">
-                Our AI explains your medical records in plain language 
-                you can understand — no medical jargon.
-              </p>
-            </div>
-            <div className="border-2 border-blue-100 rounded-2xl p-6">
-              <div className="text-3xl mb-4">🔒</div>
-              <h4 className="font-semibold text-gray-800 mb-2">
-                You Are In Control
-              </h4>
-              <p className="text-gray-500 text-sm">
-                You decide who sees your records. Every access is logged 
-                so you always know who viewed your health data.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="bg-blue-600 py-20">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <h3 className="text-3xl font-bold text-white mb-4">
-            Take control of your health records today
-          </h3>
-          <p className="text-blue-200 mb-8">
-            Free for patients. Always.
-          </p>
-          <button
-            onClick={() => router.push('/login')}
-            className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold hover:bg-blue-50 transition text-lg"
-          >
-            Create Your Free Health ID
-          </button>
-        </div>
-      </div>
+      </section>
 
       {/* Footer */}
-      <div className="px-6 py-8 border-t text-center">
-        <p className="text-gray-400 text-sm">
-          © 2026 UPHR — Unified Patient Health Record. 
-          Built for Africa, designed for the world.
+      <footer className="border-t border-slate-800 py-12 px-6 text-center text-xs text-slate-500 space-y-2">
+        <p className="font-bold text-slate-400">
+          Materna AI — An AI-Powered Continuity-of-Care Platform for Maternal & Chronic Disease Patients.
         </p>
-      </div>
+        <p>Built for Nigeria & Africa · NDPR Compliant Clinical Decision Support · Lagos, Abuja, Kano</p>
+      </footer>
     </div>
   )
 }

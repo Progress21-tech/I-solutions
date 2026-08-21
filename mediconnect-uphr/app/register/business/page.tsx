@@ -91,7 +91,7 @@ function BusinessSetupForm() {
       <section className="mx-auto w-full max-w-xl rounded-2xl bg-white p-6 shadow-sm sm:p-8">
         <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-blue-700">UDPR</h1>
+            <h1 className="text-2xl font-bold text-emerald-700">Materna AI</h1>
             <p className="text-sm text-slate-700">Business setup</p>
           </div>
           <span className="text-sm font-medium text-slate-700">{step + 1} / {STEPS.length}</span>

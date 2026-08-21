@@ -8,7 +8,8 @@ export async function POST(req: Request) {
     const { patient, visit, patientId } = body
 
     let patientData = patient
-    let previousVisits: Visit[] = []
+    // Fix: Let TypeScript infer the type from the getStoredVisits function
+    let previousVisits: Awaited<ReturnType<typeof getStoredVisits>> = []
 
     if (!patientData && patientId) {
       patientData = getPatientById(patientId)

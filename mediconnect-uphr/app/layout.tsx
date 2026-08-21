@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en-NG">
-      <body className="bg-slate-950 text-slate-100 antialiased font-sans">
+      <body className="antialiased">
         <LanguageProvider>
           {children}
         </LanguageProvider>

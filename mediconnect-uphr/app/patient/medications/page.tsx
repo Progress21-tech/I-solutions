@@ -6,7 +6,6 @@ import {
   MedicationOrder,
   PatientRecord,
   Prescription,
-  getPatientById,
   getStoredOrders,
   getStoredPatients,
   placeMedicationOrder
@@ -16,7 +15,6 @@ export default function PatientMedicationsPage() {
   const [patient, setPatient] = useState<PatientRecord | null>(null)
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
   const [orders, setOrders] = useState<MedicationOrder[]>([])
-  const [selectedRx, setSelectedRx] = useState<Prescription | null>(null)
   const [ordering, setOrdering] = useState(false)
   const [orderSuccess, setOrderSuccess] = useState<string | null>(null)
 
@@ -28,7 +26,6 @@ export default function PatientMedicationsPage() {
       const ords = getStoredOrders(found.id)
       setOrders(ords)
 
-      // Sample active prescriptions for Amaka or current patient
       const rxs: Prescription[] = [
         {
           id: 'rx-amk-03',
@@ -58,7 +55,6 @@ export default function PatientMedicationsPage() {
         }
       ]
       setPrescriptions(rxs)
-      setSelectedRx(rxs[0])
     }
   }, [])
 
@@ -103,20 +99,20 @@ export default function PatientMedicationsPage() {
     setOrderSuccess(newOrder.order_number)
   }
 
-  if (!patient) return <div className="min-h-screen bg-slate-950 p-6 text-white">Loading medications...</div>
+  if (!patient) return <div className="min-h-screen bg-slate-50 p-6 text-slate-500">Loading medications...</div>
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-24">
       {/* Top Bar */}
-      <header className="border-b border-slate-800 bg-slate-900 px-5 py-4 flex items-center justify-between sticky top-0 z-30">
+      <header className="border-b border-slate-200 bg-white px-5 py-4 flex items-center justify-between sticky top-0 z-30 shadow-xs">
         <div className="flex items-center gap-3">
-          <Link href="/patient/dashboard" className="text-slate-400 hover:text-white text-xs font-bold">
+          <Link href="/patient/dashboard" className="text-slate-500 hover:text-slate-800 text-xs font-bold">
             ← Home
           </Link>
-          <span className="text-slate-600">/</span>
-          <h1 className="font-bold text-white text-sm">Medications & Doorstep Refill Delivery</h1>
+          <span className="text-slate-300">/</span>
+          <h1 className="font-bold text-slate-900 text-sm">Medications & Doorstep Refill Delivery</h1>
         </div>
-        <span className="text-[11px] font-bold bg-blue-950 text-blue-300 border border-blue-800/40 px-2.5 py-1 rounded-full">
+        <span className="text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full">
           Prescription-Linked Fulfillment
         </span>
       </header>
@@ -124,8 +120,8 @@ export default function PatientMedicationsPage() {
       <main className="max-w-xl mx-auto px-4 pt-5 space-y-6">
         {/* Success Alert */}
         {orderSuccess && (
-          <div className="bg-emerald-950 border border-emerald-500 text-emerald-100 p-4 rounded-2xl text-xs space-y-2 animate-bounce">
-            <div className="flex items-center gap-2 font-bold text-sm text-emerald-300">
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-4 rounded-2xl text-xs space-y-2">
+            <div className="flex items-center gap-2 font-bold text-sm text-emerald-700">
               <span>✓</span> Order Confirmed: {orderSuccess}
             </div>
             <p>
@@ -135,55 +131,55 @@ export default function PatientMedicationsPage() {
         )}
 
         {/* Closed-Loop Safety Notice */}
-        <div className="bg-gradient-to-r from-blue-950/60 via-slate-900 to-slate-900 border border-blue-800/40 p-4 rounded-2xl text-xs space-y-1">
-          <span className="font-bold text-blue-300 block uppercase tracking-wider text-[11px]">
+        <div className="bg-blue-50/70 border border-blue-200 p-4 rounded-2xl text-xs space-y-1">
+          <span className="font-bold text-blue-800 block uppercase tracking-wider text-[11px]">
             🔒 Clinician-Controlled Medication Access
           </span>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
+          <p className="text-slate-600 text-[11px] leading-relaxed">
             Materna AI only allows ordering medications and dosage strengths actively prescribed by your doctor or midwife at Lagos Island Maternity.
           </p>
         </div>
 
         {/* Active Prescriptions List */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-            <h2 className="font-bold text-xs text-white uppercase tracking-wider">
+        <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <h2 className="font-bold text-xs text-slate-900 uppercase tracking-wider">
               Active Prescriptions ({prescriptions.length})
             </h2>
-            <span className="text-[11px] text-slate-400">Dr. Bello Adeyemi</span>
+            <span className="text-[11px] text-slate-500">Dr. Bello Adeyemi</span>
           </div>
 
           <div className="space-y-3">
             {prescriptions.map((rx) => (
               <div
                 key={rx.id}
-                className="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 space-y-3 text-xs"
+                className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 text-xs"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="font-extrabold text-white text-sm">{rx.medication_name}</span>
-                    <p className="text-slate-400 text-[11px] mt-0.5">
+                    <span className="font-extrabold text-slate-900 text-sm">{rx.medication_name}</span>
+                    <p className="text-slate-500 text-[11px] mt-0.5">
                       {rx.dosage} · {rx.frequency}
                     </p>
-                    <p className="text-emerald-400 font-semibold text-[11px] mt-1">
+                    <p className="text-emerald-700 font-semibold text-[11px] mt-1">
                       {rx.refills_remaining} Refills Remaining ({rx.duration_days} days supply each)
                     </p>
                   </div>
-                  <span className="bg-slate-900 text-slate-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-slate-800">
+                  <span className="bg-white text-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-slate-200">
                     {rx.category}
                   </span>
                 </div>
 
-                <p className="text-slate-300 text-[11px] bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/60">
+                <p className="text-slate-600 text-[11px] bg-white p-2.5 rounded-xl border border-slate-200">
                   📋 <strong>Instructions:</strong> {rx.instructions}
                 </p>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-slate-400 text-[11px]">Partner: Medplus Pharmacy</span>
+                  <span className="text-slate-500 text-[11px]">Partner: Medplus Pharmacy</span>
                   <button
                     onClick={() => handlePlaceRefillOrder(rx)}
                     disabled={ordering}
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow-md shadow-blue-950 flex items-center gap-1.5"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow-xs flex items-center gap-1.5"
                   >
                     <span>🚀</span> Order Home Delivery (₦{rx.category === 'Antihypertensive' ? '4,500' : '11,200'})
                   </button>
@@ -194,62 +190,62 @@ export default function PatientMedicationsPage() {
         </div>
 
         {/* Live Delivery Status Tracker */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-            <h2 className="font-bold text-xs text-white uppercase tracking-wider">
+        <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <h2 className="font-bold text-xs text-slate-900 uppercase tracking-wider">
               Live Delivery Status ({orders.length})
             </h2>
-            <span className="text-[11px] text-emerald-400 font-bold">Partner Pharmacy Network</span>
+            <span className="text-[11px] text-emerald-700 font-bold">Partner Pharmacy Network</span>
           </div>
 
           {orders.map((order) => (
-            <div key={order.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3 text-xs">
+            <div key={order.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 text-xs">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-mono font-bold text-white text-sm">{order.order_number}</span>
-                  <p className="text-slate-400 text-[11px]">Placed {new Date(order.placed_at).toLocaleTimeString()}</p>
+                  <span className="font-mono font-bold text-slate-900 text-sm">{order.order_number}</span>
+                  <p className="text-slate-500 text-[11px]">Placed {new Date(order.placed_at).toLocaleTimeString()}</p>
                 </div>
-                <span className="bg-emerald-950 text-emerald-300 font-bold text-[10px] uppercase px-2.5 py-1 rounded-full border border-emerald-800/40">
+                <span className="bg-emerald-50 text-emerald-700 font-bold text-[10px] uppercase px-2.5 py-1 rounded-full border border-emerald-200">
                   {order.status.replace(/_/g, ' ')}
                 </span>
               </div>
 
               {/* Progress Steps */}
               <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] pt-1">
-                <div className="p-1.5 rounded-lg bg-emerald-950 border border-emerald-700 text-emerald-300 font-bold">
+                <div className="p-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
                   ✓ Confirmed
                 </div>
-                <div className="p-1.5 rounded-lg bg-emerald-950 border border-emerald-700 text-emerald-300 font-bold">
+                <div className="p-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
                   ✓ Dispensed
                 </div>
-                <div className="p-1.5 rounded-lg bg-emerald-950 border border-emerald-700 text-emerald-300 font-bold">
+                <div className="p-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
                   ✓ Rider Assigned
                 </div>
-                <div className="p-1.5 rounded-lg bg-blue-950 border border-blue-600 text-blue-300 font-bold animate-pulse">
+                <div className="p-1.5 rounded-lg bg-blue-50 border border-blue-300 text-blue-700 font-bold">
                   🚴 In Transit
                 </div>
               </div>
 
               {/* Rider Info Card */}
               {order.rider_name && (
-                <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                <div className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase">Assigned Dispatch Rider</span>
-                    <p className="font-bold text-white mt-0.5">{order.rider_name}</p>
-                    <p className="text-slate-400 text-[11px]">{order.rider_phone}</p>
+                    <span className="text-slate-500 block text-[10px] uppercase">Assigned Dispatch Rider</span>
+                    <p className="font-bold text-slate-900 mt-0.5">{order.rider_name}</p>
+                    <p className="text-slate-500 text-[11px]">{order.rider_phone}</p>
                   </div>
                   <a
                     href={`tel:${order.rider_phone}`}
-                    className="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs"
                   >
                     📞 Call Rider
                   </a>
                 </div>
               )}
 
-              <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-900 flex justify-between">
+              <div className="text-[11px] text-slate-500 pt-1 border-t border-slate-200 flex justify-between">
                 <span>Deliver To: {order.delivery_address}</span>
-                <span className="font-bold text-slate-200">Total: ₦{order.total_amount_ngn.toLocaleString()}</span>
+                <span className="font-bold text-slate-800">Total: ₦{order.total_amount_ngn.toLocaleString()}</span>
               </div>
             </div>
           ))}
@@ -257,20 +253,20 @@ export default function PatientMedicationsPage() {
       </main>
 
       {/* Floating Bottom Nav */}
-      <nav className="fixed bottom-0 inset-x-0 bg-slate-900/95 border-t border-slate-800 backdrop-blur px-6 py-2.5 flex items-center justify-around z-40 max-w-xl mx-auto">
-        <Link href="/patient/dashboard" className="text-center text-slate-400 hover:text-slate-200 flex flex-col items-center gap-0.5">
+      <nav className="fixed bottom-0 inset-x-0 bg-white/95 border-t border-slate-200 backdrop-blur px-6 py-2.5 flex items-center justify-around z-40 max-w-xl mx-auto shadow-md">
+        <Link href="/patient/dashboard" className="text-center text-slate-500 hover:text-slate-800 flex flex-col items-center gap-0.5">
           <span className="text-base">🏠</span>
           <span className="text-[10px] font-bold">Home</span>
         </Link>
-        <Link href="/patient/medications" className="text-center text-pink-400 flex flex-col items-center gap-0.5">
+        <Link href="/patient/medications" className="text-center text-rose-600 flex flex-col items-center gap-0.5">
           <span className="text-base">💊</span>
           <span className="text-[10px] font-bold">Meds & Refills</span>
         </Link>
-        <Link href="/patient/chat" className="text-center text-slate-400 hover:text-slate-200 flex flex-col items-center gap-0.5">
+        <Link href="/patient/chat" className="text-center text-slate-500 hover:text-slate-800 flex flex-col items-center gap-0.5">
           <span className="text-base">🤖</span>
           <span className="text-[10px] font-bold">AI Copilot</span>
         </Link>
-        <Link href="/patient/log" className="text-center text-slate-400 hover:text-slate-200 flex flex-col items-center gap-0.5">
+        <Link href="/patient/log" className="text-center text-slate-500 hover:text-slate-800 flex flex-col items-center gap-0.5">
           <span className="text-base">📊</span>
           <span className="text-[10px] font-bold">Log Vitals</span>
         </Link>

@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const { patient, visit, patientId } = body
 
     let patientData = patient
-    let previousVisits = []
+    let previousVisits: Visit[] = []
 
     if (!patientData && patientId) {
       patientData = getPatientById(patientId)

@@ -15,7 +15,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `https://udpr.vercel.app/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
@@ -95,11 +95,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-600">UPHR</h1>
-          <p className="text-gray-500 mt-2">Unified Patient Health Record</p>
-          <p className="text-sm text-gray-400 mt-1">
-            Your health record, anywhere in the world
-          </p>
+          <h1 className="text-3xl font-bold text-emerald-700">Materna AI</h1>
+          <p className="text-gray-500 mt-2">Continuity of care, connected</p>
+          <p className="text-sm text-gray-400 mt-1">Your care record, wherever life takes you</p>
         </div>
 
         {/* Email/Password */}

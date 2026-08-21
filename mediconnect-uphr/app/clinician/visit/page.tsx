@@ -209,11 +209,11 @@ function StructuredVisitEntryForm() {
     liveRisk?.tier === 'RED'
       ? 'bg-rose-50 text-rose-700 border-rose-200'
       : liveRisk?.tier === 'AMBER'
-      ? 'bg-amber-50 text-amber-700 border-amber-200'
-      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        ? 'bg-amber-50 text-amber-700 border-amber-200'
+        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-16">
+    <div className="workflow-page min-h-screen bg-slate-50 text-slate-900 font-sans pb-16">
       {/* Header */}
       <header className="border-b border-slate-200 bg-white px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-xs">
         <div className="flex items-center gap-3">
@@ -229,11 +229,10 @@ function StructuredVisitEntryForm() {
           <button
             onClick={handleSaveVisit}
             disabled={saving || savedSuccess}
-            className={`font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-xs flex items-center gap-2 ${
-              savedSuccess
+            className={`font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-xs flex items-center gap-2 ${savedSuccess
                 ? 'bg-emerald-600 text-white'
                 : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-            }`}
+              }`}
           >
             {savedSuccess ? '✓ Visit Saved Successfully!' : saving ? 'Saving...' : '💾 Save & Update Risk Tier'}
           </button>
@@ -410,11 +409,10 @@ function StructuredVisitEntryForm() {
                     key={sym}
                     type="button"
                     onClick={() => toggleSymptom(sym)}
-                    className={`p-2.5 rounded-xl border text-left font-semibold transition flex items-center justify-between ${
-                      active
+                    className={`p-2.5 rounded-xl border text-left font-semibold transition flex items-center justify-between ${active
                         ? 'bg-rose-50 border-rose-500 text-rose-800'
                         : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     <span>{sym}</span>
                     <span>{active ? '✓' : '+'}</span>
@@ -532,13 +530,12 @@ function StructuredVisitEntryForm() {
               </div>
               <div className="w-full h-3 rounded-full bg-slate-100 border border-slate-200 overflow-hidden">
                 <div
-                  className={`h-full transition-all duration-500 ${
-                    liveRisk?.tier === 'RED'
+                  className={`h-full transition-all duration-500 ${liveRisk?.tier === 'RED'
                       ? 'bg-rose-500'
                       : liveRisk?.tier === 'AMBER'
-                      ? 'bg-amber-500'
-                      : 'bg-emerald-500'
-                  }`}
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                    }`}
                   style={{ width: `${liveRisk?.score || 10}%` }}
                 />
               </div>

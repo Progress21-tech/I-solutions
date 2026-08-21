@@ -90,19 +90,25 @@ How can I help you today? You can ask about your symptoms, your prescribed Methy
     setLoading(true)
 
     try {
-      const response = await fetch('/api/ai/chat', {
+      const response = await fetch('/api/copilot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: updatedMessages,
-          patient,
-          records,
+          patientId: patient?.health_id || 'MAT-AMK-2026',
+          message: userText,
+          history: updatedMessages.slice(0, -1),
           language
         })
       })
       const data = await response.json()
       if (response.ok && data.reply) {
         setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }])
+        if (data.escalated && data.redFlagCategory) {
+          setEmergencyModal({
+            show: true,
+            reason: `Detected symptom: ${data.redFlagCategory}`
+          })
+        }
       } else {
         setMessages((prev) => [
           ...prev,
